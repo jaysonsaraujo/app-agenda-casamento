@@ -291,7 +291,6 @@ class DatabaseManager {
             
             if (error) throw error;
             
-            // Agrupar por data
             const events = {};
             data.forEach(item => {
                 if (!events[item.wedding_date]) {
@@ -416,9 +415,8 @@ class DatabaseManager {
             console.error('Erro ao atualizar lembretes:', error);
         }
     }
-}
 
-    // ===== RELATÓRIOS E ESTATÍSTICAS =====
+    // ===== ESTATÍSTICAS =====
     async getMonthStatistics(year, month) {
         try {
             const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
@@ -461,37 +459,9 @@ class DatabaseManager {
             throw error;
         }
     }
+}
 
-    async updateLocationStatus(id, isActive) {
-        try {
-            const { error } = await this.supabase
-                .from('locations')
-                .update({ is_active: isActive })
-                .eq('id', id);
-            
-            if (error) throw error;
-        } catch (error) {
-            console.error('Erro ao atualizar status do local:', error);
-            throw error;
-        }
-    }
-
-    async updateCelebrantStatus(id, isActive) {
-        try {
-            const { error } = await this.supabase
-                .from('celebrants')
-                .update({ is_active: isActive })
-                .eq('id', id);
-            
-            if (error) throw error;
-        } catch (error) {
-            console.error('Erro ao atualizar status do celebrante:', error);
-            throw error;
-        }
-    }
-
+// ===== CRIAR INSTÂNCIA GLOBAL =====
 console.log('📦 Criando window.db...');
 window.db = new DatabaseManager();
 console.log('✅ window.db criado:', typeof window.db);
-
-
