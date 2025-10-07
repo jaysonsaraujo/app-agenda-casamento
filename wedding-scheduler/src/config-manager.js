@@ -1,6 +1,7 @@
 // Classe para gerenciar a página de configurações
 class ConfigManager {
     constructor() {
+        console.log('🔧 ConfigManager constructor chamado');
         this.configs = {};
         this.locations = [];
         this.celebrants = [];
@@ -10,35 +11,53 @@ class ConfigManager {
         try {
             console.log('🔧 Inicializando Config Manager...');
             
+            // Verificar se window.db existe
+            if (!window.db) {
+                console.error('❌ window.db não está disponível!');
+                throw new Error('Database não inicializado');
+            }
+            
             const connected = await window.checkSupabaseConnection();
             if (!connected) {
+                console.error('❌ Não conectado ao Supabase');
                 this.showNotification('Erro ao conectar com o banco de dados', 'error');
                 return;
             }
 
+            console.log('✅ Supabase conectado');
+            
             await this.loadAllData();
             this.setupEventListeners();
             await this.loadStatistics();
             
             console.log('✅ Config Manager inicializado');
         } catch (error) {
-            console.error('Erro ao inicializar:', error);
-            this.showNotification('Erro ao carregar configurações', 'error');
+            console.error('❌ Erro ao inicializar:', error);
+            this.showNotification('Erro ao carregar configurações: ' + error.message, 'error');
         }
     }
 
     async loadAllData() {
-        await Promise.all([
-            this.loadConfigs(),
-            this.loadLocations(),
-            this.loadCelebrants()
-        ]);
+        console.log('📊 Carregando todos os dados...');
+        try {
+            await Promise.all([
+                this.loadConfigs(),
+                this.loadLocations(),
+                this.loadCelebrants()
+            ]);
+            console.log('✅ Todos os dados carregados');
+        } catch (error) {
+            console.error('❌ Erro ao carregar dados:', error);
+            throw error;
+        }
     }
 
     // ===== CONFIGURAÇÕES =====
     async loadConfigs() {
         try {
+            console.log('⚙️ Carregando configurações...');
             const configs = await window.db.getConfig();
+            console.log('Configs recebidas:', configs);
             
             this.configs = {};
             configs.forEach(config => {
@@ -46,126 +65,80 @@ class ConfigManager {
             });
 
             this.fillConfigForms();
+            console.log('✅ Configurações carregadas');
         } catch (error) {
-            console.error('Erro ao carregar configurações:', error);
+            console.error('❌ Erro ao carregar configurações:', error);
+            throw error;
         }
     }
 
     fillConfigForms() {
-        document.getElementById('config-site-name').value = this.configs.site_name || '';
-        document.getElementById('config-max-weddings').value = this.configs.max_weddings_per_day || '4';
-        document.getElementById('config-max-community').value = this.configs.max_community_weddings || '3';
-        document.getElementById('config-reminder-2d').value = this.configs.reminder_interview_2d || '48';
-        document.getElementById('config-reminder-1d').value = this.configs.reminder_interview_1d || '24';
-        document.getElementById('config-reminder-12h').value = this.configs.reminder_interview_12h || '12';
-        document.getElementById('config-reminder-wedding').value = this.configs.reminder_wedding || '24';
-    }
+        const fields = [
+            { id: 'config-site-name', key: 'site_name', default: '' },
+            { id: 'config-max-weddings', key: 'max_weddings_per_day', default: '4' },
+            { id: 'config-max-community', key: 'max_community_weddings', default: '3' },
+            { id: 'config-reminder-2d', key: 'reminder_interview_2d', default: '48' },
+            { id: 'config-reminder-1d', key: 'reminder_interview_1d', default: '24' },
+            { id: 'config-reminder-12h', key: 'reminder_interview_12h', default: '12' },
+            { id: 'config-reminder-wedding', key: 'reminder_wedding', default: '24' }
+        ];
 
-    // ===== EVENT LISTENERS =====
-    setupEventListeners() {
-        // Formulários de configuração
-        document.getElementById('form-general-config').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveGeneralConfig();
+        fields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (element) {
+                element.value = this.configs[field.key] || field.default;
+            }
         });
-
-        document.getElementById('form-schedule-config').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveScheduleConfig();
-        });
-
-        document.getElementById('form-reminder-config').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveReminderConfig();
-        });
-
-        // Formulários de adição
-        document.getElementById('form-add-location').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addLocation();
-        });
-
-        document.getElementById('form-add-celebrant').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addCelebrant();
-        });
-
-        // Formulários de edição
-        document.getElementById('form-edit-location').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.updateLocation();
-        });
-
-        document.getElementById('form-edit-celebrant').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.updateCelebrant();
-        });
-
-        // Validação em tempo real
-        window.validator.setupRealtimeValidation('form-add-location');
-        window.validator.setupRealtimeValidation('form-add-celebrant');
-        window.validator.setupRealtimeValidation('form-edit-location');
-        window.validator.setupRealtimeValidation('form-edit-celebrant');
-    }
-
-    // ===== SALVAR CONFIGURAÇÕES =====
-    async saveGeneralConfig() {
-        try {
-            const siteName = document.getElementById('config-site-name').value;
-            await window.db.updateConfig('site_name', siteName);
-            
-            this.showNotification('✅ Configurações gerais salvas!', 'success');
-        } catch (error) {
-            console.error('Erro ao salvar:', error);
-            this.showNotification('❌ Erro ao salvar configurações', 'error');
-        }
-    }
-
-    async saveScheduleConfig() {
-        try {
-            await window.db.updateConfig('max_weddings_per_day', document.getElementById('config-max-weddings').value);
-            await window.db.updateConfig('max_community_weddings', document.getElementById('config-max-community').value);
-            
-            this.showNotification('✅ Limites de agendamento salvos!', 'success');
-        } catch (error) {
-            console.error('Erro ao salvar:', error);
-            this.showNotification('❌ Erro ao salvar limites', 'error');
-        }
-    }
-
-    async saveReminderConfig() {
-        try {
-            await window.db.updateConfig('reminder_interview_2d', document.getElementById('config-reminder-2d').value);
-            await window.db.updateConfig('reminder_interview_1d', document.getElementById('config-reminder-1d').value);
-            await window.db.updateConfig('reminder_interview_12h', document.getElementById('config-reminder-12h').value);
-            await window.db.updateConfig('reminder_wedding', document.getElementById('config-reminder-wedding').value);
-            
-            this.showNotification('✅ Configurações de lembretes salvas!', 'success');
-        } catch (error) {
-            console.error('Erro ao salvar:', error);
-            this.showNotification('❌ Erro ao salvar lembretes', 'error');
-        }
     }
 
     // ===== LOCAIS =====
     async loadLocations() {
         try {
-            this.locations = await window.db.getLocations(false);
+            console.log('🏛️ Carregando locais...');
+            
+            // Chamar diretamente o Supabase para garantir
+            const { data, error } = await window.db.supabase
+                .from('locations')
+                .select('*')
+                .order('name');
+            
+            if (error) {
+                console.error('❌ Erro do Supabase:', error);
+                throw error;
+            }
+            
+            console.log('Locais recebidos:', data);
+            this.locations = data || [];
+            
             this.renderLocationsTable();
+            console.log('✅ Locais carregados:', this.locations.length);
         } catch (error) {
-            console.error('Erro ao carregar locais:', error);
+            console.error('❌ Erro ao carregar locais:', error);
+            const tbody = document.querySelector('#locations-table tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${error.message}</td></tr>`;
+            }
         }
     }
 
     renderLocationsTable() {
+        console.log('🎨 Renderizando tabela de locais...');
         const tbody = document.querySelector('#locations-table tbody');
+        
+        if (!tbody) {
+            console.error('❌ Elemento tbody não encontrado');
+            return;
+        }
+        
         tbody.innerHTML = '';
 
-        if (this.locations.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum local cadastrado</td></tr>';
+        if (!this.locations || this.locations.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Nenhum local cadastrado</td></tr>';
             return;
         }
 
+        console.log(`Renderizando ${this.locations.length} locais`);
+        
         this.locations.forEach(location => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -190,8 +163,159 @@ class ConfigManager {
             `;
             tbody.appendChild(tr);
         });
+        
+        console.log('✅ Tabela de locais renderizada');
     }
 
+    // ===== CELEBRANTES =====
+    async loadCelebrants() {
+        try {
+            console.log('⛪ Carregando celebrantes...');
+            
+            // Chamar diretamente o Supabase
+            const { data, error } = await window.db.supabase
+                .from('celebrants')
+                .select('*')
+                .order('name');
+            
+            if (error) {
+                console.error('❌ Erro do Supabase:', error);
+                throw error;
+            }
+            
+            console.log('Celebrantes recebidos:', data);
+            this.celebrants = data || [];
+            
+            this.renderCelebrantsTable();
+            console.log('✅ Celebrantes carregados:', this.celebrants.length);
+        } catch (error) {
+            console.error('❌ Erro ao carregar celebrantes:', error);
+            const tbody = document.querySelector('#celebrants-table tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${error.message}</td></tr>`;
+            }
+        }
+    }
+
+    renderCelebrantsTable() {
+        console.log('🎨 Renderizando tabela de celebrantes...');
+        const tbody = document.querySelector('#celebrants-table tbody');
+        
+        if (!tbody) {
+            console.error('❌ Elemento tbody não encontrado');
+            return;
+        }
+        
+        tbody.innerHTML = '';
+
+        if (!this.celebrants || this.celebrants.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Nenhum celebrante cadastrado</td></tr>';
+            return;
+        }
+
+        console.log(`Renderizando ${this.celebrants.length} celebrantes`);
+
+        this.celebrants.forEach(celebrant => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${celebrant.name}</strong></td>
+                <td>${celebrant.title}</td>
+                <td>${celebrant.phone || '-'}</td>
+                <td>
+                    <span class="status-badge ${celebrant.is_active ? 'active' : 'inactive'}">
+                        ${celebrant.is_active ? '✅ Ativo' : '❌ Inativo'}
+                    </span>
+                </td>
+                <td>
+                    <div class="table-actions">
+                        <button class="btn-table" onclick="configManager.editCelebrant(${celebrant.id})">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn-table ${celebrant.is_active ? 'danger' : ''}" onclick="configManager.toggleCelebrantStatus(${celebrant.id})">
+                            ${celebrant.is_active ? '🚫 Desativar' : '✅ Ativar'}
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        console.log('✅ Tabela de celebrantes renderizada');
+    }
+
+    // ===== EVENT LISTENERS =====
+    setupEventListeners() {
+        console.log('🎯 Configurando event listeners...');
+        
+        // Formulários de configuração
+        const forms = [
+            { id: 'form-general-config', handler: () => this.saveGeneralConfig() },
+            { id: 'form-schedule-config', handler: () => this.saveScheduleConfig() },
+            { id: 'form-reminder-config', handler: () => this.saveReminderConfig() },
+            { id: 'form-add-location', handler: () => this.addLocation() },
+            { id: 'form-add-celebrant', handler: () => this.addCelebrant() },
+            { id: 'form-edit-location', handler: () => this.updateLocation() },
+            { id: 'form-edit-celebrant', handler: () => this.updateCelebrant() }
+        ];
+
+        forms.forEach(form => {
+            const element = document.getElementById(form.id);
+            if (element) {
+                element.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    form.handler();
+                });
+            }
+        });
+
+        // Validação em tempo real
+        if (window.validator) {
+            window.validator.setupRealtimeValidation('form-add-location');
+            window.validator.setupRealtimeValidation('form-add-celebrant');
+            window.validator.setupRealtimeValidation('form-edit-location');
+            window.validator.setupRealtimeValidation('form-edit-celebrant');
+        }
+        
+        console.log('✅ Event listeners configurados');
+    }
+
+    // ===== SALVAR CONFIGURAÇÕES =====
+    async saveGeneralConfig() {
+        try {
+            const siteName = document.getElementById('config-site-name').value;
+            await window.db.updateConfig('site_name', siteName);
+            this.showNotification('✅ Configurações gerais salvas!', 'success');
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
+        }
+    }
+
+    async saveScheduleConfig() {
+        try {
+            await window.db.updateConfig('max_weddings_per_day', document.getElementById('config-max-weddings').value);
+            await window.db.updateConfig('max_community_weddings', document.getElementById('config-max-community').value);
+            this.showNotification('✅ Limites salvos!', 'success');
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
+        }
+    }
+
+    async saveReminderConfig() {
+        try {
+            await window.db.updateConfig('reminder_interview_2d', document.getElementById('config-reminder-2d').value);
+            await window.db.updateConfig('reminder_interview_1d', document.getElementById('config-reminder-1d').value);
+            await window.db.updateConfig('reminder_interview_12h', document.getElementById('config-reminder-12h').value);
+            await window.db.updateConfig('reminder_wedding', document.getElementById('config-reminder-wedding').value);
+            this.showNotification('✅ Lembretes salvos!', 'success');
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
+        }
+    }
+
+    // ===== ADICIONAR LOCAL =====
     async addLocation() {
         try {
             const formData = {
@@ -212,10 +336,10 @@ class ConfigManager {
             document.getElementById('form-add-location').reset();
             
             await this.loadLocations();
-            this.showNotification('✅ Local adicionado com sucesso!', 'success');
+            this.showNotification('✅ Local adicionado!', 'success');
         } catch (error) {
             console.error('Erro ao adicionar:', error);
-            this.showNotification('❌ Erro ao adicionar local: ' + error.message, 'error');
+            this.showNotification('❌ Erro: ' + error.message, 'error');
         }
     }
 
@@ -254,8 +378,8 @@ class ConfigManager {
             await this.loadLocations();
             this.showNotification('✅ Local atualizado!', 'success');
         } catch (error) {
-            console.error('Erro ao atualizar:', error);
-            this.showNotification('❌ Erro ao atualizar local', 'error');
+            console.error('Erro:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
         }
     }
 
@@ -274,56 +398,12 @@ class ConfigManager {
             await this.loadLocations();
             this.showNotification(`✅ Local ${location.is_active ? 'desativado' : 'ativado'}!`, 'success');
         } catch (error) {
-            console.error('Erro ao alterar status:', error);
-            this.showNotification('❌ Erro ao alterar status', 'error');
+            console.error('Erro:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
         }
     }
 
-    // ===== CELEBRANTES =====
-    async loadCelebrants() {
-        try {
-            this.celebrants = await window.db.getCelebrants(false);
-            this.renderCelebrantsTable();
-        } catch (error) {
-            console.error('Erro ao carregar celebrantes:', error);
-        }
-    }
-
-    renderCelebrantsTable() {
-        const tbody = document.querySelector('#celebrants-table tbody');
-        tbody.innerHTML = '';
-
-        if (this.celebrants.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum celebrante cadastrado</td></tr>';
-            return;
-        }
-
-        this.celebrants.forEach(celebrant => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${celebrant.name}</strong></td>
-                <td>${celebrant.title}</td>
-                <td>${celebrant.phone || '-'}</td>
-                <td>
-                    <span class="status-badge ${celebrant.is_active ? 'active' : 'inactive'}">
-                        ${celebrant.is_active ? '✅ Ativo' : '❌ Inativo'}
-                    </span>
-                </td>
-                <td>
-                    <div class="table-actions">
-                        <button class="btn-table" onclick="configManager.editCelebrant(${celebrant.id})">
-                            ✏️ Editar
-                        </button>
-                        <button class="btn-table ${celebrant.is_active ? 'danger' : ''}" onclick="configManager.toggleCelebrantStatus(${celebrant.id})">
-                            ${celebrant.is_active ? '🚫 Desativar' : '✅ Ativar'}
-                        </button>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
+    // ===== ADICIONAR CELEBRANTE =====
     async addCelebrant() {
         try {
             const formData = {
@@ -343,10 +423,10 @@ class ConfigManager {
             document.getElementById('form-add-celebrant').reset();
             
             await this.loadCelebrants();
-            this.showNotification('✅ Celebrante adicionado com sucesso!', 'success');
+            this.showNotification('✅ Celebrante adicionado!', 'success');
         } catch (error) {
-            console.error('Erro ao adicionar:', error);
-            this.showNotification('❌ Erro ao adicionar celebrante: ' + error.message, 'error');
+            console.error('Erro:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
         }
     }
 
@@ -384,8 +464,8 @@ class ConfigManager {
             await this.loadCelebrants();
             this.showNotification('✅ Celebrante atualizado!', 'success');
         } catch (error) {
-            console.error('Erro ao atualizar:', error);
-            this.showNotification('❌ Erro ao atualizar celebrante', 'error');
+            console.error('Erro:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
         }
     }
 
@@ -404,25 +484,24 @@ class ConfigManager {
             await this.loadCelebrants();
             this.showNotification(`✅ Celebrante ${celebrant.is_active ? 'desativado' : 'ativado'}!`, 'success');
         } catch (error) {
-            console.error('Erro ao alterar status:', error);
-            this.showNotification('❌ Erro ao alterar status', 'error');
+            console.error('Erro:', error);
+            this.showNotification('❌ Erro: ' + error.message, 'error');
         }
     }
 
     // ===== ESTATÍSTICAS =====
     async loadStatistics() {
         try {
+            console.log('📊 Carregando estatísticas...');
             const now = new Date();
             const currentYear = now.getFullYear();
             const currentMonth = now.getMonth() + 1;
 
-            // Total geral
             const { count: totalWeddings } = await window.db.supabase
                 .from('weddings')
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'AGENDADO');
 
-            // Este mês
             const startDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
             const lastDay = new Date(currentYear, currentMonth, 0).getDate();
             const endDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${lastDay}`;
@@ -434,19 +513,14 @@ class ConfigManager {
                 .lte('wedding_date', endDate)
                 .eq('status', 'AGENDADO');
 
-            const monthStats = {
-                total: monthData?.length || 0,
-                community: monthData?.filter(w => w.is_community).length || 0,
-                civil: monthData?.filter(w => w.with_civil_effect).length || 0
-            };
-
-            // Atualizar valores
             document.getElementById('stat-total').textContent = totalWeddings || 0;
-            document.getElementById('stat-month').textContent = monthStats.total;
-            document.getElementById('stat-community').textContent = monthStats.community;
-            document.getElementById('stat-civil').textContent = monthStats.civil;
+            document.getElementById('stat-month').textContent = monthData?.length || 0;
+            document.getElementById('stat-community').textContent = monthData?.filter(w => w.is_community).length || 0;
+            document.getElementById('stat-civil').textContent = monthData?.filter(w => w.with_civil_effect).length || 0;
+            
+            console.log('✅ Estatísticas carregadas');
         } catch (error) {
-            console.error('Erro ao carregar estatísticas:', error);
+            console.error('❌ Erro ao carregar estatísticas:', error);
         }
     }
 
@@ -469,7 +543,6 @@ class ConfigManager {
 
     showNotification(message, type = 'info') {
         const container = document.getElementById('notification-container');
-        
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         
@@ -481,7 +554,6 @@ class ConfigManager {
         `;
         
         container.appendChild(notification);
-        
         setTimeout(() => notification.remove(), 5000);
         
         notification.querySelector('.notification-close').addEventListener('click', () => {
@@ -500,5 +572,6 @@ window.showAddCelebrantModal = () => configManager.openModal('modal-add-celebran
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM carregado, iniciando ConfigManager...');
     configManager.init();
 });
