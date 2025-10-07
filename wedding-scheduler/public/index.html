@@ -10,9 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        console.log('🔵 HTML carregado');
+    </script>
 </head>
 <body>
+    <script>console.log('🔵 Body iniciado');</script>
+    
     <!-- Header -->
     <header class="main-header">
         <div class="container">
@@ -40,7 +45,6 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Calendar Section -->
         <section id="calendar-section" class="content-section active">
             <div class="calendar-controls">
                 <button class="btn-year" id="btn-prev-year">
@@ -56,11 +60,16 @@
                 </button>
             </div>
             
-            <div id="calendar-container" class="calendar-grid"></div>
+            <div id="calendar-container" class="calendar-grid">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p>Carregando calendário...</p>
+                </div>
+            </div>
         </section>
     </main>
 
-    <!-- Modal: Wedding Type Selection -->
+    <!-- Modal: Wedding Type -->
     <div id="modal-wedding-type" class="modal">
         <div class="modal-content modal-small">
             <h3>Tipo de Casamento</h3>
@@ -72,7 +81,7 @@
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                     <span>Casamento Individual</span>
-                    <small>Cerimônia exclusiva para um casal</small>
+                    <small>Cerimônia exclusiva</small>
                 </button>
                 <button class="btn-wedding-type" data-type="community">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -82,14 +91,14 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
                     <span>Casamento Comunitário</span>
-                    <small>Cerimônia coletiva com vários casais</small>
+                    <small>Cerimônia coletiva</small>
                 </button>
             </div>
             <button class="btn-cancel" onclick="closeModal('modal-wedding-type')">Cancelar</button>
         </div>
     </div>
 
-    <!-- Modal: Wedding Form -->
+    <!-- Modal: Wedding Form (versão compacta para teste) -->
     <div id="modal-wedding-form" class="modal">
         <div class="modal-content modal-large">
             <div class="modal-header">
@@ -101,8 +110,259 @@
                 <input type="hidden" id="wedding-id">
                 <input type="hidden" id="is-community">
                 
-                <!-- Basic Info -->
                 <section class="form-section">
-                    <h4>Informações do Agendamento</h4>
+                    <h4>Informações Básicas</h4>
                     <div class="form-row">
-                        <div 
+                        <div class="form-group">
+                            <label>ID</label>
+                            <input type="text" id="display-wedding-id" readonly class="readonly-field">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Agendamento</label>
+                            <input type="text" id="display-schedule-date" readonly class="readonly-field">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <input type="text" id="display-wedding-type" readonly class="readonly-field">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Entrevista</h4>
+                    <div class="form-group">
+                        <label for="interview-date">Data da Entrevista <span class="required">*</span></label>
+                        <input type="datetime-local" id="interview-date" required>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Noivos</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bride-name">Nome da Noiva <span class="required">*</span></label>
+                            <input type="text" id="bride-name" required class="uppercase-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="bride-whatsapp">WhatsApp <span class="required">*</span></label>
+                            <input type="tel" id="bride-whatsapp" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="groom-name">Nome do Noivo <span class="required">*</span></label>
+                            <input type="text" id="groom-name" required class="uppercase-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="groom-whatsapp">WhatsApp <span class="required">*</span></label>
+                            <input type="tel" id="groom-whatsapp" required>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Casamento</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="wedding-date">Data <span class="required">*</span></label>
+                            <input type="date" id="wedding-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="wedding-time">Horário <span class="required">*</span></label>
+                            <input type="time" id="wedding-time" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">Local <span class="required">*</span></label>
+                            <div class="input-with-action">
+                                <select id="location" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <button type="button" class="btn-add-new" id="btn-add-location">+</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="celebrant">Celebrante <span class="required">*</span></label>
+                            <div class="input-with-action">
+                                <select id="celebrant" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <button type="button" class="btn-add-new" id="btn-add-celebrant">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Transferência</h4>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="transfer_type" value="none" checked>
+                            <span>Sem transferência</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="transfer_type" value="ENTRADA_PAROQUIA">
+                            <span>Vem de outra paróquia</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="transfer_type" value="SAIDA_PAROQUIA">
+                            <span>Vai para outra paróquia</span>
+                        </label>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="civil-effect">
+                            <span>Com efeito civil</span>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Proclames</h4>
+                    <div class="proclamation-table">
+                        <div class="proclamation-header">
+                            <div>1º Domingo</div>
+                            <div>2º Domingo</div>
+                            <div>3º Domingo</div>
+                            <div>Casamento</div>
+                        </div>
+                        <div class="proclamation-dates">
+                            <div id="first-sunday">--/--/----</div>
+                            <div id="second-sunday">--/--/----</div>
+                            <div id="third-sunday">--/--/----</div>
+                            <div id="wedding-date-display">--/--/----</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Observações</h4>
+                    <div class="form-group">
+                        <label for="observations">Observações</label>
+                        <textarea id="observations" rows="3" class="uppercase-input"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="system-message">Mensagem do Sistema</label>
+                        <textarea id="system-message" rows="2" class="uppercase-input"></textarea>
+                    </div>
+                </section>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-wedding-form')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Day Events -->
+    <div id="modal-day-events" class="modal">
+        <div class="modal-content modal-medium">
+            <div class="modal-header">
+                <h3 id="day-events-title">Eventos do Dia</h3>
+                <button class="btn-close" onclick="closeModal('modal-day-events')">&times;</button>
+            </div>
+            <div id="day-events-list" class="events-list"></div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-day-events')">Fechar</button>
+                <button class="btn-primary" id="btn-new-event-from-list">Novo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Location -->
+    <div id="modal-add-location" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Novo Local</h3>
+            <form id="form-add-location">
+                <div class="form-group">
+                    <label for="new-location-name">Nome <span class="required">*</span></label>
+                    <input type="text" id="new-location-name" required class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="new-location-address">Endereço</label>
+                    <input type="text" id="new-location-address" class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="new-location-capacity">Capacidade</label>
+                    <input type="number" id="new-location-capacity" min="0">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-add-location')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Celebrant -->
+    <div id="modal-add-celebrant" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Novo Celebrante</h3>
+            <form id="form-add-celebrant">
+                <div class="form-group">
+                    <label for="new-celebrant-name">Nome <span class="required">*</span></label>
+                    <input type="text" id="new-celebrant-name" required class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="new-celebrant-title">Título <span class="required">*</span></label>
+                    <select id="new-celebrant-title" required>
+                        <option value="">Selecione...</option>
+                        <option value="PADRE">Padre</option>
+                        <option value="DIÁCONO">Diácono</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-celebrant-phone">Telefone</label>
+                    <input type="tel" id="new-celebrant-phone">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-add-celebrant')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="calendar-tooltip" class="calendar-tooltip">
+        <div class="tooltip-content"></div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script>console.log('🔵 Carregando Supabase...');</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>console.log('🔵 Carregando config/supabase.js');</script>
+    <script src="/config/supabase.js"></script>
+    
+    <script>console.log('🔵 Carregando src/database.js');</script>
+    <script src="/src/database.js"></script>
+    
+    <script>console.log('🔵 Carregando src/validation.js');</script>
+    <script src="/src/validation.js"></script>
+    
+    <script>console.log('🔵 Carregando src/calendar.js');</script>
+    <script src="/src/calendar.js"></script>
+    
+    <script>console.log('🔵 Carregando src/app.js');</script>
+    <script src="/src/app.js"></script>
+    
+    <script>
+        console.log('🔵 Todos os scripts carregados');
+        console.log('window.supabaseClient:', typeof window.supabaseClient);
+        console.log('window.db:', typeof window.db);
+        console.log('window.validator:', typeof window.validator);
+        console.log('window.calendar:', typeof window.calendar);
+        console.log('window.app:', typeof window.app);
+    </script>
+</body>
+</html>
