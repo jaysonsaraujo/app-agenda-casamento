@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test DB</title>
+</head>
+<body>
+    <h1>Test Database Connection</h1>
+    <div id="result">Testing...</div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config/supabase.js"></script>
+    <script src="/src/database.js"></script>
+    
+    <script>
+        async function test() {
+            const result = document.getElementById('result');
+            
+            console.log('window.supabase:', typeof window.supabase);
+            console.log('window.supabaseClient:', typeof window.supabaseClient);
+            console.log('window.db:', typeof window.db);
+            
+            if (!window.db) {
+                result.innerHTML = '❌ window.db não existe!';
+                result.style.color = 'red';
+                return;
+            }
+            
+            try {
+                const locations = await window.db.supabase.from('locations').select('*');
+                console.log('Locations:', locations);
+                
+                result.innerHTML = `
+                    ✅ window.db OK!<br>
+                    Locais encontrados: ${locations.data?.length || 0}<br>
+                    <pre>${JSON.stringify(locations.data, null, 2)}</pre>
+                `;
+                result.style.color = 'green';
+            } catch (error) {
+                result.innerHTML = '❌ Erro: ' + error.message;
+                result.style.color = 'red';
+            }
+        }
+        
+        setTimeout(test, 1000);
+    </script>
+</body>
+</html>
