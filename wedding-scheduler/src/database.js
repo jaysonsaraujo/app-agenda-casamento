@@ -446,6 +446,22 @@ class DatabaseManager {
         }
     }
 
+        async deleteWedding(weddingId) {
+        try {
+            const { error } = await this.supabase
+                .from('weddings')
+                .delete()
+                .eq('wedding_id', weddingId);
+            
+            if (error) throw error;
+            
+            console.log('✅ Casamento deletado:', weddingId);
+        } catch (error) {
+            console.error('Erro ao deletar casamento:', error);
+            throw error;
+        }
+    }
+
     async deleteWedding(weddingId) {
         try {
             const { error } = await this.supabase
