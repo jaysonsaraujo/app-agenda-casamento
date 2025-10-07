@@ -7,18 +7,9 @@ WORKDIR /app
 # Copiar arquivos de dependências
 COPY package*.json ./
 
-# Instalar dependências de produção
-RUN npm ci --only=production && \
+# Instalar todas as dependências primeiro para gerar package-lock.json se necessário
+RUN npm install --production && \
     npm cache clean --force
-
-# Copiar código fonte
-COPY . .
-
-# Criar diretórios necessários
-RUN mkdir -p /app/public /app/src /app/config /app/sql
-
-# Build dos assets (se necessário)
-RUN npm run build 2>/dev/null || true
 
 # Production stage
 FROM node:18-alpine
@@ -39,12 +30,20 @@ RUN addgroup -g 1001 -S nodejs && \
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos do builder
+# Copiar node_modules do builder
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --chown=nodejs:nodejs . .
 
-# Criar diretórios com permissões corretas
-RUN mkdir -p /app/logs /app/temp && \
+# Copiar código da aplicação
+COPY --chown=nodejs:nodejs package*.json ./
+COPY --chown=nodejs:nodejs public ./public
+COPY --chown=nodejs:nodejs src ./src
+COPY --chown=nodejs:nodejs config ./config
+COPY --chown=nodejs:nodejs sql ./sql
+COPY --chown=nodejs:nodejs server.js ./
+COPY --chown=nodejs:nodejs .env* ./
+
+# Criar diretórios necessários
+RUN mkdir -p /app/logs /app/uploads /app/backups /app/temp && \
     chown -R nodejs:nodejs /app
 
 # Expor porta
