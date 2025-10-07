@@ -491,3 +491,4 @@ class DatabaseManager {
     }
 
 window.db = new DatabaseManager();
+console.log('✅ window.db inicializado:', window.db);
