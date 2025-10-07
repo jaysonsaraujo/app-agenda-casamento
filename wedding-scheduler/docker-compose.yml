@@ -1,101 +1,16 @@
-version: '3.8'
+# ====================================
+# Docker Compose para EasyPanel
+# ====================================
 
 services:
-  # Aplicação Web
-  wedding-app:
+  # Aplicação Principal
+  web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: wedding-scheduler
     restart: unless-stopped
-    ports:
-      - "${APP_PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - TZ=America/Sao_Paulo
-    volumes:
-      - ./logs:/app/logs
-      - ./uploads:/app/uploads
-    networks:
-      - wedding-network
-    labels:
-      # Labels para EasyPanel
-      - "easypanel.enable=true"
-      - "easypanel.name=wedding-scheduler"
-      - "easypanel.description=Sistema de Agendamento de Casamentos"
-      - "easypanel.domain=${APP_DOMAIN:-wedding.local}"
-      - "easypanel.port=3000"
-      - "easypanel.https=true"
-      - "easypanel.forceHttps=true"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # Nginx Reverse Proxy (Opcional - se não usar EasyPanel)
-  nginx:
-    image: nginx:alpine
-    container_name: wedding-nginx
-    restart: unless-stopped
-    ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
-      - "${NGINX_HTTPS_PORT:-443}:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/sites:/etc/nginx/sites-enabled:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./public:/usr/share/nginx/html:ro
-    depends_on:
-      - wedding-app
-    networks:
-      - wedding-network
-    profiles:
-      - with-nginx
-
-  # Backup Service (Opcional)
-  backup:
-    image: postgres:15-alpine
-    container_name: wedding-backup
-    restart: "no"
-    environment:
-      - PGPASSWORD=${DB_PASSWORD}
-    volumes:
-      - ./backups:/backups
-    command: >
-      sh -c "
-        while true; do
-          echo 'Iniciando backup...'
-          pg_dump -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql
-          echo 'Backup concluído'
-          sleep 86400
-        done
-      "
-    networks:
-      - wedding-network
-    profiles:
-      - with-backup
-
-networks:
-  wedding-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-
-volumes:
-  logs:
-    driver: local
-  uploads:
-    driver: local
-  backups:
-    driver: local
+      - SUPABASE_URL=${SUPABASE_URL:-https://app-phm-psj-db-phm2-supabase.xqzrhl.easypanel.host}
+      - 
