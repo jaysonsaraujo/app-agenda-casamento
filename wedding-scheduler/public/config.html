@@ -10,8 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- Carregar Supabase primeiro -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -106,29 +104,29 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Salvar</button>
+                        <button type="submit" class="btn-primary">💾 Salvar Configurações</button>
                     </div>
                 </form>
             </section>
 
-            <!-- Limites de Agendamento -->
+            <!-- Limites -->
             <section class="config-section">
                 <h2>📅 Limites de Agendamento</h2>
                 <form id="form-schedule-config" class="config-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="config-max-weddings">Máximo por Dia</label>
+                            <label for="config-max-weddings">Máximo de Casamentos por Dia</label>
                             <input type="number" id="config-max-weddings" min="1" max="20">
                         </div>
                         
                         <div class="form-group">
-                            <label for="config-max-community">Máximo Comunitários</label>
+                            <label for="config-max-community">Máximo de Comunitários por Dia</label>
                             <input type="number" id="config-max-community" min="0" max="10">
                         </div>
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Salvar</button>
+                        <button type="submit" class="btn-primary">💾 Salvar Limites</button>
                     </div>
                 </form>
             </section>
@@ -155,16 +153,16 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Salvar</button>
+                        <button type="submit" class="btn-primary">💾 Salvar Lembretes</button>
                     </div>
                 </form>
             </section>
 
             <!-- Locais -->
             <section class="config-section">
-                <h2>🏛️ Locais</h2>
+                <h2>🏛️ Gerenciamento de Locais</h2>
                 <div class="section-header">
-                    <button type="button" class="btn-primary" onclick="showAddLocationModal()">
+                    <button type="button" class="btn-primary" onclick="configApp.showAddLocationModal()">
                         ➕ Adicionar Local
                     </button>
                 </div>
@@ -194,9 +192,9 @@
 
             <!-- Celebrantes -->
             <section class="config-section">
-                <h2>⛪ Celebrantes</h2>
+                <h2>⛪ Gerenciamento de Celebrantes</h2>
                 <div class="section-header">
-                    <button type="button" class="btn-primary" onclick="showAddCelebrantModal()">
+                    <button type="button" class="btn-primary" onclick="configApp.showAddCelebrantModal()">
                         ➕ Adicionar Celebrante
                     </button>
                 </div>
@@ -227,10 +225,191 @@
         </div>
     </main>
 
-    <!-- Modals aqui... (vou adicionar no próximo bloco) -->
+    <!-- Modal: Add Location -->
+    <div id="modal-add-location" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Adicionar Novo Local</h3>
+                <button class="btn-close" onclick="configApp.closeModal('modal-add-location')">&times;</button>
+            </div>
+            <form id="form-add-location">
+                <div style="padding: 1.5rem;">
+                    <div class="form-group">
+                        <label for="new-location-name">Nome do Local <span class="required">*</span></label>
+                        <input type="text" id="new-location-name" required class="uppercase-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-location-address">Endereço</label>
+                        <input type="text" id="new-location-address" class="uppercase-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-location-capacity">Capacidade</label>
+                        <input type="number" id="new-location-capacity" min="0" placeholder="Ex: 300">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-add-location')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        ➕ Adicionar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Location -->
+    <div id="modal-edit-location" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Editar Local</h3>
+                <button class="btn-close" onclick="configApp.closeModal('modal-edit-location')">&times;</button>
+            </div>
+            <form id="form-edit-location">
+                <input type="hidden" id="edit-location-id">
+                <div style="padding: 1.5rem;">
+                    <div class="form-group">
+                        <label for="edit-location-name">Nome do Local <span class="required">*</span></label>
+                        <input type="text" id="edit-location-name" required class="uppercase-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-location-address">Endereço</label>
+                        <input type="text" id="edit-location-address" class="uppercase-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-location-capacity">Capacidade</label>
+                        <input type="number" id="edit-location-capacity" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-location-active">Status</label>
+                        <select id="edit-location-active">
+                            <option value="true">Ativo</option>
+                            <option value="false">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-edit-location')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        💾 Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Celebrant -->
+    <div id="modal-add-celebrant" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Adicionar Novo Celebrante</h3>
+                <button class="btn-close" onclick="configApp.closeModal('modal-add-celebrant')">&times;</button>
+            </div>
+            <form id="form-add-celebrant">
+                <div style="padding: 1.5rem;">
+                    <div class="form-group">
+                        <label for="new-celebrant-name">Nome Completo <span class="required">*</span></label>
+                        <input type="text" id="new-celebrant-name" required class="uppercase-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-celebrant-title">Título <span class="required">*</span></label>
+                        <select id="new-celebrant-title" required>
+                            <option value="">Selecione...</option>
+                            <option value="PADRE">Padre</option>
+                            <option value="DIÁCONO">Diácono</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-celebrant-phone">Telefone</label>
+                        <input type="tel" id="new-celebrant-phone" placeholder="(11) 99999-9999">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-add-celebrant')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        ➕ Adicionar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Celebrant -->
+    <div id="modal-edit-celebrant" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Editar Celebrante</h3>
+                <button class="btn-close" onclick="configApp.closeModal('modal-edit-celebrant')">&times;</button>
+            </div>
+            <form id="form-edit-celebrant">
+                <input type="hidden" id="edit-celebrant-id">
+                <div style="padding: 1.5rem;">
+                    <div class="form-group">
+                        <label for="edit-celebrant-name">Nome Completo <span class="required">*</span></label>
+                        <input type="text" id="edit-celebrant-name" required class="uppercase-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-celebrant-title">Título <span class="required">*</span></label>
+                        <select id="edit-celebrant-title" required>
+                            <option value="">Selecione...</option>
+                            <option value="PADRE">Padre</option>
+                            <option value="DIÁCONO">Diácono</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-celebrant-phone">Telefone</label>
+                        <input type="tel" id="edit-celebrant-phone" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-celebrant-active">Status</label>
+                        <select id="edit-celebrant-active">
+                            <option value="true">Ativo</option>
+                            <option value="false">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-edit-celebrant')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        💾 Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Confirm Delete -->
+    <div id="modal-confirm" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="confirm-title">Confirmar Ação</h3>
+                <button class="btn-close" onclick="configApp.closeModal('modal-confirm')">&times;</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p id="confirm-message" style="font-size: 1rem; line-height: 1.6;"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-confirm')">
+                    Cancelar
+                </button>
+                <button type="button" class="btn-primary" id="confirm-action-btn" style="background-color: var(--danger-color);">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
     <div id="notification-container" class="notification-container"></div>
 
-    <!-- Estilos adicionais inline -->
+    <!-- Estilos adicionais -->
     <style>
         .config-container { max-width: 1200px; margin: 0 auto; }
         .config-section { background-color: var(--surface); border-radius: var(--radius-lg); padding: var(--spacing-xl); margin-bottom: var(--spacing-xl); box-shadow: var(--shadow-md); }
@@ -254,123 +433,13 @@
         .stat-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
         .stat-value { font-size: 2rem; font-weight: 700; }
         .stat-label { font-size: 0.875rem; color: var(--text-secondary); }
+        .modal-footer { padding: var(--spacing-lg) var(--spacing-xl); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--spacing-md); }
     </style>
 
-    <!-- Scripts na ordem correta -->
+    <!-- Scripts -->
     <script src="/config/supabase.js"></script>
     <script src="/src/database.js"></script>
     <script src="/src/validation.js"></script>
-    
-    <!-- Script inline para config manager -->
-    <script>
-        console.log('🚀 Iniciando config page...');
-        
-        // Aguardar tudo carregar
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('DOM ready');
-            
-            // Verificar dependências
-            if (!window.db) {
-                console.error('window.db não disponível');
-                alert('Erro ao carregar sistema. Recarregue a página.');
-                return;
-            }
-            
-            try {
-                // Carregar locais
-                const { data: locations, error: locError } = await window.db.supabase
-                    .from('locations')
-                    .select('*')
-                    .order('name');
-                
-                if (locError) throw locError;
-                
-                console.log('Locais:', locations);
-                
-                const tbody = document.querySelector('#locations-table tbody');
-                tbody.innerHTML = '';
-                
-                if (!locations || locations.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum local</td></tr>';
-                } else {
-                    locations.forEach(loc => {
-                        tbody.innerHTML += `
-                            <tr>
-                                <td><strong>${loc.name}</strong></td>
-                                <td>${loc.address || '-'}</td>
-                                <td>${loc.capacity || '-'}</td>
-                                <td><span class="status-badge ${loc.is_active ? 'active' : 'inactive'}">${loc.is_active ? '✅ Ativo' : '❌ Inativo'}</span></td>
-                                <td>
-                                    <button class="btn-table">✏️ Editar</button>
-                                    <button class="btn-table danger">🚫 Desativar</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-                
-                // Carregar celebrantes
-                const { data: celebrants, error: celError } = await window.db.supabase
-                    .from('celebrants')
-                    .select('*')
-                    .order('name');
-                
-                if (celError) throw celError;
-                
-                console.log('Celebrantes:', celebrants);
-                
-                const tbody2 = document.querySelector('#celebrants-table tbody');
-                tbody2.innerHTML = '';
-                
-                if (!celebrants || celebrants.length === 0) {
-                    tbody2.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum celebrante</td></tr>';
-                } else {
-                    celebrants.forEach(cel => {
-                        tbody2.innerHTML += `
-                            <tr>
-                                <td><strong>${cel.name}</strong></td>
-                                <td>${cel.title}</td>
-                                <td>${cel.phone || '-'}</td>
-                                <td><span class="status-badge ${cel.is_active ? 'active' : 'inactive'}">${cel.is_active ? '✅ Ativo' : '❌ Inativo'}</span></td>
-                                <td>
-                                    <button class="btn-table">✏️ Editar</button>
-                                    <button class="btn-table danger">🚫 Desativar</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-                
-                // Carregar estatísticas
-                const { count: total } = await window.db.supabase
-                    .from('weddings')
-                    .select('*', { count: 'exact', head: true });
-                
-                document.getElementById('stat-total').textContent = total || 0;
-                
-                // Carregar configs
-                const configs = await window.db.getConfig();
-                configs.forEach(c => {
-                    const el = document.getElementById(`config-${c.config_key.replace('_', '-')}`);
-                    if (el) el.value = c.config_value;
-                });
-                
-                console.log('✅ Tudo carregado!');
-                
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro ao carregar dados: ' + error.message);
-            }
-        });
-        
-        // Funções globais
-        function showAddLocationModal() {
-            alert('Modal de adicionar local (em desenvolvimento)');
-        }
-        
-        function showAddCelebrantModal() {
-            alert('Modal de adicionar celebrante (em desenvolvimento)');
-        }
-    </script>
+    <script src="/src/config-app.js"></script>
 </body>
 </html>
