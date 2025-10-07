@@ -819,3 +819,33 @@ body {
 .calendar-grid > div {
     min-height: 200px;
 }
+
+/* Status de casamento */
+#wedding-status {
+    font-weight: 500;
+}
+
+#wedding-status option {
+    padding: 0.5rem;
+}
+
+.event-item {
+    position: relative;
+}
+
+.event-item::before {
+    content: '✏️';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.event-item:hover::before {
+    opacity: 1;
+}
+
+.event-item:hover {
+    transform: translateX(4px);
+}
