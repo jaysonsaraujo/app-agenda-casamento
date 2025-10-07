@@ -1,0 +1,71 @@
+{
+  "name": "wedding-scheduler",
+  "services": {
+    "web": {
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "domains": [
+        {
+          "name": "$(PRIMARY_DOMAIN)",
+          "port": 3000
+        }
+      ],
+      "environment": {
+        "NODE_ENV": "production",
+        "PORT": "3000",
+        "SUPABASE_URL": "$(SUPABASE_URL)",
+        "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
+        "TZ": "America/Sao_Paulo",
+        "APP_NAME": "Sistema de Agendamento de Casamentos"
+      },
+      "volumes": [
+        {
+          "name": "logs",
+          "path": "/app/logs"
+        },
+        {
+          "name": "uploads",
+          "path": "/app/uploads"
+        },
+        {
+          "name": "backups",
+          "path": "/app/backups"
+        }
+      ],
+      "healthcheck": {
+        "path": "/health",
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3
+      },
+      "resources": {
+        "limits": {
+          "memory": "512M",
+          "cpus": "0.5"
+        },
+        "reservations": {
+          "memory": "256M",
+          "cpus": "0.25"
+        }
+      }
+    }
+  },
+  "env": {
+    "PRIMARY_DOMAIN": {
+      "description": "Domínio principal da aplicação",
+      "default": "wedding.example.com"
+    },
+    "SUPABASE_URL": {
+      "description": "URL do Supabase",
+      "required": true,
+      "default": "https://app-phm-psj-db-phm2-supabase.xqzrhl.easypanel.host"
+    },
+    "SUPABASE_ANON_KEY": {
+      "description": "Chave Anon do Supabase",
+      "required": true,
+      "default": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE"
+    }
+  }
+}
