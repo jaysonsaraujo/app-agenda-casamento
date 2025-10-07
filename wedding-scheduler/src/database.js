@@ -490,5 +490,8 @@ class DatabaseManager {
         }
     }
 
+console.log('📦 Criando window.db...');
 window.db = new DatabaseManager();
-console.log('✅ window.db inicializado:', window.db);
+console.log('✅ window.db criado:', typeof window.db);
+
+
