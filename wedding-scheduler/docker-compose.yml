@@ -1,79 +1,20 @@
-# ====================================
-# Docker Compose para EasyPanel
-# ====================================
-
 services:
-  # Aplicação Principal
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - SUPABASE_URL=${SUPABASE_URL:-https://app-phm-psj-db-phm2-supabase.xqzrhl.easypanel.host}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE}
-      - TZ=America/Sao_Paulo
-      - APP_NAME=${APP_NAME:-Sistema de Agendamento de Casamentos}
+      NODE_ENV: production
+      PORT: 3000
+      SUPABASE_URL: ${SUPABASE_URL:-https://app-phm-psj-db-phm2-supabase.xqzrhl.easypanel.host}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE}
+      TZ: America/Sao_Paulo
     volumes:
       - ./logs:/app/logs
       - ./uploads:/app/uploads
-      - ./backups:/app/backups
     expose:
       - "3000"
-    networks:
-      - default
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # Serviço de Backup (opcional - descomente se necessário)
-  # backup:
-  #   image: postgres:15-alpine
-  #   restart: "no"
-  #   environment:
-  #     - PGPASSWORD=${DB_PASSWORD:-}
-  #     - DB_HOST=${DB_HOST:-}
-  #     - DB_USER=${DB_USER:-postgres}
-  #     - DB_NAME=${DB_NAME:-postgres}
-  #   volumes:
-  #     - ./backups:/backups
-  #   command: >
-  #     sh -c "
-  #       if [ -n \"$$DB_HOST\" ]; then
-  #         while true; do
-  #           echo 'Iniciando backup...'
-  #           pg_dump -h $$DB_HOST -U $$DB_USER -d $$DB_NAME > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql
-  #           echo 'Backup concluído'
-  #           sleep 86400
-  #         done
-  #       else
-  #         echo 'DB_HOST não configurado. Backup desabilitado.'
-  #         sleep infinity
-  #       fi
-  #     "
-  #   networks:
-  #     - default
-  #   profiles:
-  #     - backup
-
-networks:
-  default:
-    driver: bridge
-
-volumes:
-  logs:
-    driver: local
-  uploads:
-    driver: local
-  backups:
-    driver: local
