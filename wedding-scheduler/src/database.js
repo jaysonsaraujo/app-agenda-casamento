@@ -418,4 +418,76 @@ class DatabaseManager {
     }
 }
 
+    // ===== RELATÓRIOS E ESTATÍSTICAS =====
+    async getMonthStatistics(year, month) {
+        try {
+            const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+            const lastDay = new Date(year, month, 0).getDate();
+            const endDate = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
+            
+            const { data, error } = await this.supabase
+                .from('weddings')
+                .select('is_community, with_civil_effect')
+                .gte('wedding_date', startDate)
+                .lte('wedding_date', endDate)
+                .eq('status', 'AGENDADO');
+            
+            if (error) throw error;
+            
+            const stats = {
+                total: data.length,
+                community: data.filter(w => w.is_community).length,
+                individual: data.filter(w => !w.is_community).length,
+                withCivil: data.filter(w => w.with_civil_effect).length
+            };
+            
+            return stats;
+        } catch (error) {
+            console.error('Erro ao buscar estatísticas:', error);
+            throw error;
+        }
+    }
+
+    async deleteWedding(weddingId) {
+        try {
+            const { error } = await this.supabase
+                .from('weddings')
+                .delete()
+                .eq('wedding_id', weddingId);
+            
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erro ao deletar casamento:', error);
+            throw error;
+        }
+    }
+
+    async updateLocationStatus(id, isActive) {
+        try {
+            const { error } = await this.supabase
+                .from('locations')
+                .update({ is_active: isActive })
+                .eq('id', id);
+            
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erro ao atualizar status do local:', error);
+            throw error;
+        }
+    }
+
+    async updateCelebrantStatus(id, isActive) {
+        try {
+            const { error } = await this.supabase
+                .from('celebrants')
+                .update({ is_active: isActive })
+                .eq('id', id);
+            
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erro ao atualizar status do celebrante:', error);
+            throw error;
+        }
+    }
+
 window.db = new DatabaseManager();
