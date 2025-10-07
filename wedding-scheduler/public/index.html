@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Agendamento de Casamentos</title>
     <style>
+        /* Seus estilos aqui */
         * {
             margin: 0;
             padding: 0;
@@ -72,17 +73,6 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
         
-        #config-data {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-family: monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        
         .loading {
             display: inline-block;
             width: 20px;
@@ -97,6 +87,14 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -104,124 +102,96 @@
         <h1>💒 Sistema de Agendamento de Casamentos</h1>
         
         <div class="status success">
-            <strong>✅ Sistema Online</strong><br>
-            O servidor está rodando corretamente!
+            <strong>✅ Servidor Online</strong>
         </div>
         
         <div id="connection-status" class="status">
-            <strong>🔄 Verificando conexão...</strong>
-            <div class="loading"></div>
+            <strong>🔄 Verificando banco de dados...</strong>
         </div>
         
-        <div id="config-data"></div>
+        <div id="result"></div>
         
-        <div>
-            <button onclick="testHealth()">Testar Health</button>
-            <button onclick="testConfig()">Testar Config</button>
-            <button onclick="testSupabase()">Testar Supabase</button>
-            <button onclick="loadFullSystem()">Carregar Sistema Completo</button>
+        <div style="margin-top: 20px;">
+            <button onclick="testDatabase()">🔄 Testar Conexão</button>
+            <button onclick="showData()">📊 Ver Dados</button>
         </div>
-        
-        <div id="result" style="margin-top: 20px;"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        let supabase = null;
+        // CREDENCIAIS ATUALIZADAS
+        const SUPABASE_URL = 'https://aplicativos-db-phm2-supabase.xqzrhl.easypanel.host';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE';
         
-        // Testar health
-        async function testHealth() {
-            showLoading();
-            try {
-                const response = await fetch('/health');
-                const data = await response.json();
-                showResult('Health Check', data, 'success');
-            } catch (error) {
-                showResult('Health Check', error.message, 'error');
-            }
-        }
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Testar config
-        async function testConfig() {
-            showLoading();
-            try {
-                const response = await fetch('/api/config');
-                const data = await response.json();
-                showResult('Config API', data, 'success');
-                
-                // Inicializar Supabase
-                if (data.supabaseUrl && data.supabaseAnonKey) {
-                    supabase = window.supabase.createClient(data.supabaseUrl, data.supabaseAnonKey);
-                    showConnectionStatus('Supabase inicializado', 'success');
-                }
-            } catch (error) {
-                showResult('Config API', error.message, 'error');
-            }
-        }
-        
-        // Testar Supabase
-        async function testSupabase() {
-            showLoading();
-            
-            if (!supabase) {
-                await testConfig();
-            }
+        async function testDatabase() {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.innerHTML = '<strong>🔄 Testando conexão...</strong>';
+            statusDiv.className = 'status';
             
             try {
-                const { data, error } = await supabase.from('system_config').select('*').limit(1);
+                const { data, error } = await supabase
+                    .from('system_config')
+                    .select('*');
                 
                 if (error) throw error;
                 
-                showResult('Supabase Connection', {
-                    status: 'Connected',
-                    data: data
-                }, 'success');
-                showConnectionStatus('✅ Conectado ao Supabase!', 'success');
+                statusDiv.innerHTML = '<strong>✅ Conexão Estabelecida!</strong><br>Banco de dados operacional.';
+                statusDiv.className = 'status success';
+                
+                document.getElementById('result').innerHTML = `
+                    <div class="status success">
+                        <strong>📊 Sistema Configurado</strong>
+                        <p>${data.length} configurações carregadas</p>
+                    </div>
+                `;
+                
             } catch (error) {
-                showResult('Supabase Connection', error.message, 'error');
-                showConnectionStatus('❌ Erro ao conectar com Supabase', 'error');
+                statusDiv.innerHTML = '<strong>❌ Erro na Conexão</strong>';
+                statusDiv.className = 'status error';
+                
+                document.getElementById('result').innerHTML = `
+                    <div class="status error">
+                        <strong>Erro:</strong>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
             }
         }
         
-        // Carregar sistema completo
-        function loadFullSystem() {
-            alert('Sistema completo será carregado em breve. Por enquanto, os testes básicos estão funcionando!');
+        async function showData() {
+            try {
+                const [configs, locations, celebrants, weddings] = await Promise.all([
+                    supabase.from('system_config').select('*'),
+                    supabase.from('locations').select('*'),
+                    supabase.from('celebrants').select('*'),
+                    supabase.from('weddings').select('*')
+                ]);
+                
+                document.getElementById('result').innerHTML = `
+                    <div class="status success">
+                        <strong>📊 Dados do Sistema</strong>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Configurações: ${configs.data?.length || 0}</li>
+                            <li>Locais: ${locations.data?.length || 0}</li>
+                            <li>Celebrantes: ${celebrants.data?.length || 0}</li>
+                            <li>Casamentos: ${weddings.data?.length || 0}</li>
+                        </ul>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="status error">
+                        <strong>Erro:</strong>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
         }
         
-        // Helpers
-        function showLoading() {
-            document.getElementById('result').innerHTML = '<div class="loading"></div> Processando...';
-        }
-        
-        function showResult(title, data, type = 'info') {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <div class="status ${type}">
-                    <strong>${title}</strong><br>
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
-                </div>
-            `;
-        }
-        
-        function showConnectionStatus(message, type) {
-            const statusDiv = document.getElementById('connection-status');
-            statusDiv.className = `status ${type}`;
-            statusDiv.innerHTML = `<strong>${message}</strong>`;
-        }
-        
-        // Auto-teste ao carregar
-        window.addEventListener('load', async () => {
-            console.log('Página carregada!');
-            
-            // Testar health automaticamente
-            await testHealth();
-            
-            // Testar config
-            await testConfig();
-            
-            // Tentar conectar ao Supabase
-            setTimeout(testSupabase, 1000);
-        });
+        // Testar automaticamente ao carregar
+        window.addEventListener('load', testDatabase);
     </script>
 </body>
 </html>
