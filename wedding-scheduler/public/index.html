@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Agendamento de Casamentos</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <h1 id="site-title">Sistema de Agendamento de Casamentos</h1>
+            <nav class="main-nav">
+                <button class="nav-btn active" id="btn-calendar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Calendário
+                </button>
+                <button class="nav-btn" id="btn-config">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
+                    </svg>
+                    Configurações
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Calendar Section -->
+        <section id="calendar-section" class="content-section active">
+            <div class="calendar-controls">
+                <button class="btn-year" id="btn-prev-year">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <h2 id="current-year">2024</h2>
+                <button class="btn-year" id="btn-next-year">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="calendar-container" class="calendar-grid"></div>
+        </section>
+    </main>
+
+    <!-- Modal: Wedding Type Selection -->
+    <div id="modal-wedding-type" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Tipo de Casamento</h3>
+            <p>Selecione o tipo de casamento a ser agendado:</p>
+            <div class="wedding-type-buttons">
+                <button class="btn-wedding-type" data-type="individual">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Casamento Individual</span>
+                    <small>Cerimônia exclusiva para um casal</small>
+                </button>
+                <button class="btn-wedding-type" data-type="community">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Casamento Comunitário</span>
+                    <small>Cerimônia coletiva com vários casais</small>
+                </button>
+            </div>
+            <button class="btn-cancel" onclick="closeModal('modal-wedding-type')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal: Wedding Form -->
+    <div id="modal-wedding-form" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Cadastro de Casamento</h3>
+                <button class="btn-close" onclick="closeModal('modal-wedding-form')">&times;</button>
+            </div>
+            
+            <form id="wedding-form" class="wedding-form">
+                <input type="hidden" id="wedding-id">
+                <input type="hidden" id="is-community">
+                
+                <!-- Basic Info -->
+                <section class="form-section">
+                    <h4>Informações do Agendamento</h4>
+                    <div class="form-row">
+                        <div 
