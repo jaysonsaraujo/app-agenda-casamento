@@ -1,0 +1,973 @@
+/* ===========================
+   Reset e Variáveis Globais
+   =========================== */
+:root {
+    /* Cores principais */
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #dbeafe;
+    --secondary-color: #64748b;
+    --secondary-hover: #475569;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    
+    /* Cores neutras */
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    
+    /* Sombras */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    
+    /* Espaçamentos */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    
+    /* Bordas */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    
+    /* Transições */
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 200ms ease-in-out;
+    --transition-slow: 300ms ease-in-out;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ===========================
+   Header e Navegação
+   =========================== */
+.main-header {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.main-header .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-md) var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.main-nav {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.nav-btn:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.nav-btn[data-active="true"] {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.nav-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
+/* ===========================
+   Container Principal
+   =========================== */
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+/* ===========================
+   Controles do Calendário
+   =========================== */
+.calendar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.btn-year {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.btn-year:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-year svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+#current-year {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 120px;
+    text-align: center;
+}
+
+/* ===========================
+   Grid do Calendário
+   =========================== */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+.calendar-month {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.calendar-month:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.calendar-month-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    padding: var(--spacing-md);
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: var(--background);
+    border-bottom: 1px solid var(--border);
+}
+
+.weekday {
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background-color: var(--border);
+    padding: 1px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    background-color: var(--surface);
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-base);
+    min-height: 60px;
+}
+
+.calendar-day:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+.calendar-day.other-month {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.calendar-day.other-month:hover {
+    background-color: var(--surface);
+    border-color: transparent;
+}
+
+.calendar-day.today {
+    background-color: var(--info-color);
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.has-events {
+    font-weight: 600;
+}
+
+.calendar-day.has-events::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+}
+
+.calendar-day.has-events.community::after {
+    background-color: var(--warning-color);
+}
+
+.calendar-day.past {
+    opacity: 0.6;
+    background-color: var(--background);
+}
+
+.day-number {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.event-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+/* ===========================
+   Tooltip do Calendário
+   =========================== */
+.calendar-tooltip {
+    position: fixed;
+    background-color: var(--text-primary);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+}
+
+.calendar-tooltip.show {
+    opacity: 1;
+}
+
+.tooltip-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* ===========================
+   Modais
+   =========================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: var(--spacing-xl);
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn var(--transition-base);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: var(--surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideIn var(--transition-slow);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-small {
+    max-width: 500px;
+    padding: var(--spacing-xl);
+}
+
+.modal-medium {
+    max-width: 700px;
+}
+
+.modal-large {
+    max-width: 900px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+}
+
+.btn-close:hover {
+    background-color: var(--background);
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+}
+
+/* ===========================
+   Tipo de Casamento
+   =========================== */
+.wedding-type-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
+}
+
+.btn-wedding-type {
+    padding: var(--spacing-lg);
+    background-color: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: center;
+}
+
+.btn-wedding-type:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-wedding-type svg {
+    margin-bottom: var(--spacing-sm);
+    stroke: var(--primary-color);
+}
+
+.btn-wedding-type span {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.btn-wedding-type small {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* ===========================
+   Formulário de Casamento
+   =========================== */
+.wedding-form {
+    padding: var(--spacing-xl);
+}
+
+.form-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.form-section h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.875rem;
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all var(--transition-base);
+    background-color: var(--surface);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+    border-color: var(--danger-color);
+}
+
+.uppercase-input {
+    text-transform: uppercase;
+}
+
+.readonly-field {
+    background-color: var(--background) !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-xs);
+}
+
+.input-with-action {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.input-with-action select {
+    flex: 1;
+}
+
+.btn-add-new {
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.btn-add-new:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+/* ===========================
+   Radio e Checkbox
+   =========================== */
+.radio-group,
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.radio-label,
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.radio-label input[type="radio"],
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* ===========================
+   Tabela de Proclames
+   =========================== */
+.proclamation-table {
+    background-color: var(--background);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.proclamation-header {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.proclamation-header > div {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.proclamation-header > div:last-child {
+    border-right: none;
+}
+
+.proclamation-dates {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background-color: var(--surface);
+}
+
+.proclamation-dates > div {
+    padding: var(--spacing-md);
+    text-align: center;
+    font-weight: 500;
+    border-right: 1px solid var(--border);
+}
+
+.proclamation-dates > div:last-child {
+    border-right: none;
+}
+
+/* ===========================
+   Botões
+   =========================== */
+.btn-primary,
+.btn-secondary,
+.btn-cancel {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background-color: var(--surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--background);
+    border-color: var(--text-secondary);
+}
+
+.btn-cancel {
+    background-color: transparent;
+    color: var(--text-secondary);
+    width: 100%;
+    margin-top: var(--spacing-md);
+}
+
+.btn-cancel:hover {
+    background-color: var(--background);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--border);
+}
+
+/* ===========================
+   Lista de Eventos
+   =========================== */
+.events-list {
+    padding: var(--spacing-lg);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.event-item {
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    transition: all var(--transition-base);
+}
+
+.event-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.event-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-sm);
+}
+
+.event-item-time {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.event-item-type {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+.event-item-type.community {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.event-item-type.individual {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.event-item-details {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.event-item-details strong {
+    color: var(--text-primary);
+}
+
+/* ===========================
+   Notificações
+   =========================== */
+.notification-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.notification {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-md);
+    max-width: 400px;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    animation: slideInRight var(--transition-base);
+    border-left: 4px solid var(--info-color);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification.success {
+    border-left-color: var(--success-color);
+}
+
+.notification.error {
+    border-left-color: var(--danger-color);
+}
+
+.notification.warning {
+    border-left-color: var(--warning-color);
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.notification-message {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+}
+
+/* ===========================
+   Responsividade
+   =========================== */
+@media (max-width: 768px) {
+    .main-header .container {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wedding-type-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .proclamation-header,
+    .proclamation-dates {
+        font-size: 0.75rem;
+    }
+    
+    .modal-content {
+        margin: var(--spacing-md);
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* ===========================
+   Animações de Loading
+   =========================== */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, var(--background) 25%, var(--border) 50%, var(--background) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ===========================
+   Utilitários
+   =========================== */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: var(--text-muted); }
+.text-danger { color: var(--danger-color); }
+.text-success { color: var(--success-color); }
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }
+.hidden { display: none !important; }
