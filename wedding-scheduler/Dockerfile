@@ -1,32 +1,31 @@
 FROM node:18-alpine
 
-# Instalar dependências do sistema
-RUN apk add --no-cache curl tzdata
+# Instalar curl para healthcheck
+RUN apk add --no-cache curl
 
-# Definir timezone
-ENV TZ=America/Sao_Paulo
-
-# Criar diretório da aplicação
+# Diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de dependências
+# Copiar package files
 COPY package*.json ./
 
 # Instalar dependências
-RUN npm install --production || npm install --production --legacy-peer-deps
+RUN npm install --production || npm install --legacy-peer-deps
 
-# Copiar código da aplicação
+# Copiar código
 COPY . .
 
-# Criar diretórios necessários
-RUN mkdir -p /app/logs /app/uploads /app/backups
+# Criar diretórios
+RUN mkdir -p public config src sql logs
 
-# Expor porta
+# Verificar se index.html existe
+RUN ls -la public/ || echo "Public directory empty"
+
+# Porta
 EXPOSE 3000
 
 # Healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:3000/health || exit 1
 
-# Comando para iniciar a aplicação
+# Start
 CMD ["node", "server.js"]
