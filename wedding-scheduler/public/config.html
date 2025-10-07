@@ -514,10 +514,38 @@
         }
     </style>
 
-    <!-- Scripts -->
+        <!-- Scripts -->
+    <script>console.log('🔵 Config.html carregado');</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>console.log('🔵 Carregando supabase.js');</script>
     <script src="/config/supabase.js"></script>
+    
+    <script>console.log('🔵 Carregando database.js');</script>
     <script src="/src/database.js"></script>
+    
+    <script>console.log('🔵 Carregando validation.js');</script>
     <script src="/src/validation.js"></script>
+    
+    <script>console.log('🔵 Carregando config-manager.js');</script>
     <script src="/src/config-manager.js"></script>
+    
+    <script>
+        console.log('🔵 Scripts carregados');
+        console.log('window.db:', typeof window.db);
+        console.log('window.validator:', typeof window.validator);
+        console.log('configManager:', typeof configManager);
+        
+        // Verificar se tudo carregou
+        setTimeout(() => {
+            if (typeof configManager === 'undefined') {
+                console.error('❌ configManager não foi definido!');
+                document.querySelector('#locations-table tbody').innerHTML = 
+                    '<tr><td colspan="5" style="text-align:center; color:red;">Erro: Script não carregou. Verifique o console.</td></tr>';
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
 </body>
 </html>
