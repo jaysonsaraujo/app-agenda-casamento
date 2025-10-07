@@ -814,3 +814,8 @@ body {
         width: 100%;
     }
 }
+
+/* Loading State */
+.calendar-grid > div {
+    min-height: 200px;
+}
