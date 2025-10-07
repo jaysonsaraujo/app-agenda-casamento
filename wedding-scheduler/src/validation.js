@@ -1,4 +1,4 @@
-// Classe para gerenciar validações e formatações
+// Classe para gerenciar validações
 class ValidationManager {
     constructor() {
         this.errors = new Map();
@@ -6,44 +6,29 @@ class ValidationManager {
 
     // ===== FORMATADORES =====
     formatPhone(value) {
-        // Remove tudo que não é número
         const numbers = value.replace(/\D/g, '');
-        
-        // Aplica a máscara (11) 99999-9999
         if (numbers.length <= 11) {
             return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         }
-        
         return value;
     }
 
     formatDate(date) {
         if (!date) return '';
-        
         const d = new Date(date);
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
-        
         return `${day}/${month}/${year}`;
     }
 
     formatDateTime(datetime) {
         if (!datetime) return '';
-        
         const d = new Date(datetime);
         const date = this.formatDate(d);
         const hours = String(d.getHours()).padStart(2, '0');
         const minutes = String(d.getMinutes()).padStart(2, '0');
-        
         return `${date} às ${hours}:${minutes}`;
-    }
-
-    formatTime(time) {
-        if (!time) return '';
-        
-        const [hours, minutes] = time.split(':');
-        return `${hours}:${minutes}`;
     }
 
     toUpperCase(value) {
@@ -68,16 +53,6 @@ class ValidationManager {
         return d >= today;
     }
 
-    isValidTime(time) {
-        const regex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-        return regex.test(time);
-    }
-
-    isValidEmail(email) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
-    }
-
     isEmpty(value) {
         return value === null || value === undefined || value.trim() === '';
     }
@@ -86,14 +61,12 @@ class ValidationManager {
     validateWeddingForm(formData) {
         this.errors.clear();
         
-        // Validar data da entrevista
         if (!formData.interview_date) {
             this.addError('interview_date', 'Data da entrevista é obrigatória');
         } else if (!this.isFutureDate(formData.interview_date)) {
             this.addError('interview_date', 'Data da entrevista deve ser futura');
         }
         
-        // Validar dados da noiva
         if (this.isEmpty(formData.bride_name)) {
             this.addError('bride_name', 'Nome da noiva é obrigatório');
         }
@@ -101,10 +74,9 @@ class ValidationManager {
         if (this.isEmpty(formData.bride_whatsapp)) {
             this.addError('bride_whatsapp', 'WhatsApp da noiva é obrigatório');
         } else if (!this.isValidPhone(formData.bride_whatsapp)) {
-            this.addError('bride_whatsapp', 'WhatsApp da noiva inválido');
+            this.addError('bride_whatsapp', 'WhatsApp inválido');
         }
         
-        // Validar dados do noivo
         if (this.isEmpty(formData.groom_name)) {
             this.addError('groom_name', 'Nome do noivo é obrigatório');
         }
@@ -112,31 +84,23 @@ class ValidationManager {
         if (this.isEmpty(formData.groom_whatsapp)) {
             this.addError('groom_whatsapp', 'WhatsApp do noivo é obrigatório');
         } else if (!this.isValidPhone(formData.groom_whatsapp)) {
-            this.addError('groom_whatsapp', 'WhatsApp do noivo inválido');
+            this.addError('groom_whatsapp', 'WhatsApp inválido');
         }
         
-        // Validar data do casamento
         if (!formData.wedding_date) {
             this.addError('wedding_date', 'Data do casamento é obrigatória');
         } else if (!this.isFutureDate(formData.wedding_date)) {
             this.addError('wedding_date', 'Data do casamento deve ser futura');
-        } else if (formData.interview_date && new Date(formData.wedding_date) <= new Date(formData.interview_date)) {
-            this.addError('wedding_date', 'Data do casamento deve ser após a entrevista');
         }
         
-        // Validar horário
         if (this.isEmpty(formData.wedding_time)) {
-            this.addError('wedding_time', 'Horário do casamento é obrigatório');
-        } else if (!this.isValidTime(formData.wedding_time)) {
-            this.addError('wedding_time', 'Horário inválido');
+            this.addError('wedding_time', 'Horário é obrigatório');
         }
         
-        // Validar local
         if (!formData.location_id) {
             this.addError('location_id', 'Local é obrigatório');
         }
         
-        // Validar celebrante
         if (!formData.celebrant_id) {
             this.addError('celebrant_id', 'Celebrante é obrigatório');
         }
@@ -151,10 +115,6 @@ class ValidationManager {
             this.addError('name', 'Nome do local é obrigatório');
         }
         
-        if (formData.capacity && formData.capacity < 0) {
-            this.addError('capacity', 'Capacidade deve ser positiva');
-        }
-        
         return this.errors.size === 0;
     }
 
@@ -162,15 +122,11 @@ class ValidationManager {
         this.errors.clear();
         
         if (this.isEmpty(formData.name)) {
-            this.addError('name', 'Nome do celebrante é obrigatório');
+            this.addError('name', 'Nome é obrigatório');
         }
         
         if (this.isEmpty(formData.title)) {
             this.addError('title', 'Título é obrigatório');
-        }
-        
-        if (formData.phone && !this.isValidPhone(formData.phone)) {
-            this.addError('phone', 'Telefone inválido');
         }
         
         return this.errors.size === 0;
@@ -185,36 +141,29 @@ class ValidationManager {
         return this.errors.get(field);
     }
 
-    hasErrors() {
-        return this.errors.size > 0;
-    }
-
-    getErrors() {
-        return Array.from(this.errors.entries());
-    }
-
     clearErrors() {
         this.errors.clear();
     }
 
-    // ===== EXIBIÇÃO DE ERROS NO FORMULÁRIO =====
     showFormErrors(formId) {
         const form = document.getElementById(formId);
         if (!form) return;
         
-        // Limpar erros anteriores
         form.querySelectorAll('.error-message').forEach(el => el.remove());
         form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
         
-        // Mostrar novos erros
         this.errors.forEach((message, field) => {
-            const input = form.querySelector(`[name="${field}"]`);
+            const input = form.querySelector(`#${field}`);
             if (input) {
                 input.classList.add('error');
                 
                 const errorEl = document.createElement('small');
                 errorEl.className = 'error-message text-danger';
                 errorEl.textContent = message;
+                errorEl.style.color = '#ef4444';
+                errorEl.style.fontSize = '0.875rem';
+                errorEl.style.marginTop = '0.25rem';
+                errorEl.style.display = 'block';
                 
                 const formGroup = input.closest('.form-group');
                 if (formGroup) {
@@ -223,7 +172,6 @@ class ValidationManager {
             }
         });
         
-        // Focar no primeiro campo com erro
         const firstError = form.querySelector('.error');
         if (firstError) {
             firstError.focus();
@@ -231,12 +179,10 @@ class ValidationManager {
         }
     }
 
-    // ===== VALIDAÇÃO EM TEMPO REAL =====
     setupRealtimeValidation(formId) {
         const form = document.getElementById(formId);
         if (!form) return;
         
-        // Configurar máscaras e transformações
         form.querySelectorAll('input[type="tel"]').forEach(input => {
             input.addEventListener('input', (e) => {
                 e.target.value = this.formatPhone(e.target.value);
@@ -250,50 +196,8 @@ class ValidationManager {
                 e.target.setSelectionRange(cursorPos, cursorPos);
             });
         });
-        
-        // Validação ao sair do campo
-        form.querySelectorAll('input[required], select[required]').forEach(input => {
-            input.addEventListener('blur', () => {
-                this.validateField(input);
-            });
-        });
     }
 
-    validateField(input) {
-        const formGroup = input.closest('.form-group');
-        if (!formGroup) return;
-        
-        // Remover erro anterior
-        formGroup.querySelector('.error-message')?.remove();
-        input.classList.remove('error');
-        
-        // Validar campo
-        let error = null;
-        
-        if (input.hasAttribute('required') && this.isEmpty(input.value)) {
-            error = 'Este campo é obrigatório';
-        } else if (input.type === 'tel' && input.value && !this.isValidPhone(input.value)) {
-            error = 'Telefone inválido';
-        } else if (input.type === 'email' && input.value && !this.isValidEmail(input.value)) {
-            error = 'Email inválido';
-        } else if (input.type === 'date' && input.value && !this.isValidDate(input.value)) {
-            error = 'Data inválida';
-        } else if (input.type === 'time' && input.value && !this.isValidTime(input.value)) {
-            error = 'Horário inválido';
-        }
-        
-        if (error) {
-            input.classList.add('error');
-            const errorEl = document.createElement('small');
-            errorEl.className = 'error-message text-danger';
-            errorEl.textContent = error;
-            formGroup.appendChild(errorEl);
-        }
-        
-        return !error;
-    }
-
-    // ===== VALIDAÇÃO DE CONFLITOS =====
     async validateWeddingConflicts(formData) {
         try {
             const conflicts = await window.db.checkWeddingConflicts(formData);
@@ -309,7 +213,7 @@ class ValidationManager {
                             this.addError('wedding_time', conflict.message);
                             break;
                         case 'CONFLITO_CELEBRANTE':
-                            this.addError('celebrant_id', conflict.message);
+                            this.addError('celebrant', conflict.message);
                             break;
                     }
                 });
@@ -325,5 +229,4 @@ class ValidationManager {
     }
 }
 
-// Criar instância global
 window.validator = new ValidationManager();
