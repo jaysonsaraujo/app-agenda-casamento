@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - Sistema de Agendamento de Casamentos</title>
+    
+    <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <h1 id="site-title">Configurações do Sistema</h1>
+            <nav class="main-nav">
+                <button class="nav-btn" id="btn-back" onclick="window.location.href='/'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Voltar ao Calendário
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <main class="main-content">
+        <div class="config-container">
+            <!-- Configurações Gerais -->
+            <section class="config-section">
+                <h2>Configurações Gerais</h2>
+                <form id="form-general-config" class="config-form">
+                    <div class="form-group">
+                        <label for="config-site-name">Nome do Sistema</label>
+                        <input type="text" id="config-site-name" name="site_name" class="uppercase-input" required>
+                        <small class="form-help">Este nome aparecerá no título da página</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Salvar Configurações Gerais</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Configurações de Agendamento -->
+            <section class="config-section">
+                <h2>Configurações de Agendamento</h2>
+                <form id="form-schedule-config" class="config-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="config-max-weddings">Máximo de Casamentos por Dia</label>
+                            <input type="number" id="config-max-weddings" name="max_weddings_per_day" min="1" max="20" required>
+                            <small class="form-help">Limite total de eventos em um único dia</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="config-max-community">Máximo de Casamentos Comunitários</label>
+                            <input type="number" id="config-max-community" name="max_community_weddings" min="0" max="10" required>
+                            <small class="form-help">Limite de casamentos comunitários por dia</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Salvar Configurações de Agendamento</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Configurações de Lembretes -->
+            <section class="config-section">
+                <h2>Configurações de Lembretes</h2>
+                <form id="form-reminder-config" class="config-form">
+                    <h3>Lembretes de Entrevista</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="config-reminder-2d">Primeiro Lembrete (horas antes)</label>
+                            <input type="number" id="config-reminder-2d" name="reminder_interview_2d" min="1" max="168" required>
+                            <small class="form-help">Padrão: 48 horas (2 dias)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="config-reminder-1d">Segundo Lembrete (horas antes)</label>
+                            <input type="number" id="config-reminder-1d" name="reminder_interview_1d" min="1" max="72" required>
+                            <small class="form-help">Padrão: 24 horas (1 dia)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="config-reminder-12h">Terceiro Lembrete (horas antes)</label>
+                            <input type="number" id="config-reminder-12h" name="reminder_interview_12h" min="1" max="24" required>
+                            <small class="form-help">Padrão: 12 horas</small>
+                        </div>
+                    </div>
+                    
+                    <h3>Lembrete do Casamento</h3>
+                    <div class="form-group">
+                        <label for="config-reminder-wedding">Lembrete do Casamento (horas antes)</label>
+                        <input type="number" id="config-reminder-wedding" name="reminder_wedding" min="1" max="72" required>
+                        <small class="form-help">Padrão: 24 horas (1 dia antes)</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Salvar Configurações de Lembretes</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Gerenciamento de Locais -->
+            <section class="config-section">
+                <h2>Gerenciamento de Locais</h2>
+                <div class="section-header">
+                    <button class="btn-primary" onclick="showAddLocationModal()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Adicionar Local
+                    </button>
+                </div>
+                
+                <div class="data-table">
+                    <table id="locations-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Endereço</th>
+                                <th>Capacidade</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Locais serão carregados aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Gerenciamento de Celebrantes -->
+            <section class="config-section">
+                <h2>Gerenciamento de Celebrantes</h2>
+                <div class="section-header">
+                    <button class="btn-primary" onclick="showAddCelebrantModal()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Adicionar Celebrante
+                    </button>
+                </div>
+                
+                <div class="data-table">
+                    <table id="celebrants-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Título</th>
+                                <th>Telefone</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Celebrantes serão carregados aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Estatísticas -->
+            <section class="config-section">
+                <h2>Estatísticas do Sistema</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-total-weddings">0</div>
+                            <div class="stat-label">Total de Casamentos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-month-weddings">0</div>
+                            <div class="stat-label">Casamentos Este Mês</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-community-weddings">0</div>
+                            <div class="stat-label">Casamentos Comunitários</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-civil-weddings">0</div>
+                            <div class="stat-label">Com Efeito Civil</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal de Editar Local -->
+    <div id="modal-edit-location" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Editar Local</h3>
+            <form id="form-edit-location">
+                <input type="hidden" id="edit-location-id">
+                <div class="form-group">
+                    <label for="edit-location-name">Nome do Local <span class="required">*</span></label>
+                    <input type="text" id="edit-location-name" required class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit-location-address">Endereço</label>
+                    <input type="text" id="edit-location-address" class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit-location-capacity">Capacidade</label>
+                    <input type="number" id="edit-location-capacity" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="edit-location-active">Status</label>
+                    <select id="edit-location-active">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-location')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Editar Celebrante -->
+    <div id="modal-edit-celebrant" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Editar Celebrante</h3>
+            <form id="form-edit-celebrant">
+                <input type="hidden" id="edit-celebrant-id">
+                <div class="form-group">
+                    <label for="edit-celebrant-name">Nome Completo <span class="required">*</span></label>
+                    <input type="text" id="edit-celebrant-name" required class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit-celebrant-title">Título <span class="required">*</span></label>
+                    <select id="edit-celebrant-title" required>
+                        <option value="">Selecione...</option>
+                        <option value="PADRE">Padre</option>
+                        <option value="DIÁCONO">Diácono</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-celebrant-phone">Telefone</label>
+                    <input type="tel" id="edit-celebrant-phone" placeholder="(11) 99999-9999">
+                </div>
+                <div class="form-group">
+                    <label for="edit-celebrant-active">Status</label>
+                    <select id="edit-celebrant-active">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-celebrant')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notificações -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Estilos específicos da página de configurações -->
+    <style>
+        .config-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .config-section {
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .config-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            color: var(--text-primary);
+        }
+        
+        .config-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            color: var(--text-secondary);
+        }
+        
+        .config-form {
+            max-width: 800px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .data-table {
+            overflow-x: auto;
+        }
+        
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .data-table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            background-color: var(--background);
+        }
+        
+        .data-table tr:hover {
+            background-color: var(--background);
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .btn-table {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background-color: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            font-size: 0.875rem;
+        }
+        
+        .btn-table:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-table.danger:hover {
+            background-color: #fee2e2;
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge.inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .stat-card {
+            background-color: var(--background);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background-color: var(--primary-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--primary-color);
+        }
+        
+        .stat-content {
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script src="/config/supabase.js"></script>
+    <script src="/src/database.js"></script>
+    <script src="/src/validation.js"></script>
+    <script src="/src/config.js"></script>
+</body>
+</html>
