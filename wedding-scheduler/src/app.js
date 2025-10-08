@@ -157,6 +157,20 @@ if (endDate) {
 activeFilters.innerHTML = filters.length > 0
   ? filters.map(f => `<span class="active-filter">${f}</span>`).join(' ')
   : '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
+
+    // === LIMPAR FILTROS ===
+document.getElementById('btn-clear-filters').addEventListener('click', () => {
+  document.getElementById('search-name').value = '';
+  document.getElementById('search-date-start').value = '';
+  document.getElementById('search-date-end').value = '';
+  document.getElementById('search-location').value = '';
+  document.getElementById('search-celebrant').value = '';
+  document.getElementById('search-type').value = '';
+  document.getElementById('search-status').value = '';
+  
+  activeFilters.innerHTML = '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
+});
+    
     const btn = document.getElementById('btn-export-excel');
     const originalText = btn.innerHTML;
     
