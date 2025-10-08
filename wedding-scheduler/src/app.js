@@ -106,6 +106,57 @@ document.getElementById('btn-search').addEventListener('click', () => {
         window.validator.setupRealtimeValidation('form-add-celebrant');
         // === NOVA PARTE: Exportar Excel com feedback ===
 document.getElementById('btn-export-excel').addEventListener('click', async () => {
+    // === INDICADORES DE FILTROS ATIVOS ===
+const activeFilters = document.getElementById('active-filters');
+const filters = [];
+
+const name = document.getElementById('search-name').value.trim();
+if (name) {
+  filters.push(`Nome: ${name} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+}
+
+const location = document.getElementById('search-location').value;
+if (location) {
+  const locationText = document.getElementById('search-location').selectedOptions[0].text;
+  filters.push(`Local: ${locationText} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+}
+
+const celebrant = document.getElementById('search-celebrant').value;
+if (celebrant) {
+  const celebrantText = document.getElementById('search-celebrant').selectedOptions[0].text;
+  filters.push(`Celebrante: ${celebrantText} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+}
+
+const type = document.getElementById('search-type').value;
+if (type) {
+  const typeText = type === 'true' ? 'Comunitário' : 'Individual';
+  filters.push(`Tipo: ${typeText} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+}
+
+const status = document.getElementById('search-status').value;
+if (status) {
+  const statusMap = {
+    'AGENDADO': 'Agendado',
+    'REALIZADO': 'Realizado',
+    'CANCELADO': 'Cancelado'
+  };
+  filters.push(`Status: ${statusMap[status]} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+}
+
+const startDate = document.getElementById('search-date-start').value;
+if (startDate) {
+  filters.push(`De: ${startDate} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+}
+
+const endDate = document.getElementById('search-date-end').value;
+if (endDate) {
+  filters.push(`Até: ${endDate} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+}
+
+// Mostra os indicadores
+activeFilters.innerHTML = filters.length > 0
+  ? filters.map(f => `<span class="active-filter">${f}</span>`).join(' ')
+  : '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
     const btn = document.getElementById('btn-export-excel');
     const originalText = btn.innerHTML;
     
