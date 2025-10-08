@@ -19,6 +19,20 @@ class WeddingSchedulerApp {
             await this.loadConfig();
             window.calendar.init();
             this.setupEventListeners();
+            setupEventListeners() {
+        // Navegação
+        document.getElementById('btn-calendar').addEventListener('click', () => {
+            this.showSection('calendar');
+        });
+
+        // ADICIONAR ESTA NOVA SEÇÃO
+        document.getElementById('btn-search').addEventListener('click', () => {
+            this.showSection('search');
+        });
+
+        document.getElementById('btn-config').addEventListener('click', () => {
+            window.location.href = '/config.html';
+        });
             await this.loadInitialData();
             
             console.log('✅ Aplicação iniciada com sucesso');
@@ -509,3 +523,5 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, iniciando app...');
     window.app.init();
 });
+
+
