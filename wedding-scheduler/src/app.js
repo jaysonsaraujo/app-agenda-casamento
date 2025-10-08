@@ -325,12 +325,45 @@ async deleteWedding() {
         const wedding = await window.db.getWedding(this.editingWeddingId);
         const coupleName = `${wedding.bride_name} & ${wedding.groom_name}`;
         
-        // === MELHORIA: Confirmação mais bonita e segura ===
-        const confirmed = confirm(`❌ EXCLUSÃO PERMANENTE\n\nTem certeza que deseja excluir o casamento de ${coupleName}?\n\nEsta ação NÃO pode ser desfeita!`);
+        // === MELHORIA: Usar modal personalizado em vez de confirm() ===
+        const modal = document.getElementById('modal-confirm-delete');
+        const messageEl = document.getElementById('confirm-delete-message');
+        const confirmBtn = document.getElementById('btn-confirm-delete');
+        
+        messageEl.innerHTML = `Tem certeza que deseja excluir o casamento de <strong>${coupleName}</strong>?`;
+        
+        // Mostra o modal
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        
+        // Cria uma Promise para esperar a resposta
+        const confirmed = await new Promise((resolve) => {
+            const onConfirm = () => {
+                cleanup();
+                resolve(true);
+            };
+            const onCancel = () => {
+                cleanup();
+                resolve(false);
+            };
+            const cleanup = () => {
+                confirmBtn.removeEventListener('click', onConfirm);
+                document.querySelectorAll('#modal-confirm-delete .btn-close, .btn-secondary').forEach(btn => {
+                    btn.removeEventListener('click', onCancel);
+                });
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            };
+            
+            confirmBtn.addEventListener('click', onConfirm);
+            document.querySelectorAll('#modal-confirm-delete .btn-close, .btn-secondary').forEach(btn => {
+                btn.addEventListener('click', onCancel);
+            });
+        });
         
         if (!confirmed) return;
 
-        // === MELHORIA: Feedback visual no botão de excluir ===
+        // === Feedback visual no botão de excluir ===
         const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
         const originalText = deleteBtn.innerHTML;
         deleteBtn.disabled = true;
@@ -340,14 +373,14 @@ async deleteWedding() {
         
         await window.db.deleteWedding(this.editingWeddingId);
         
-        // === MELHORIA: Animação suave de saída ===
-        const modal = document.getElementById('modal-wedding-form');
-        modal.style.opacity = '0';
-        modal.style.transition = 'opacity 0.3s ease';
+        // === Animação de saída do modal ===
+        const modalForm = document.getElementById('modal-wedding-form');
+        modalForm.style.opacity = '0';
+        modalForm.style.transition = 'opacity 0.3s ease';
         
         setTimeout(() => {
             this.closeModal('modal-wedding-form');
-            modal.style.opacity = '';
+            modalForm.style.opacity = '';
         }, 200);
         
         this.hideLoading();
@@ -358,7 +391,7 @@ async deleteWedding() {
         
         this.editingWeddingId = null;
     } catch (error) {
-        // === MELHORIA: Restaura botão mesmo com erro ===
+        // Restaura botão mesmo com erro
         const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
         if (deleteBtn) {
             deleteBtn.disabled = false;
