@@ -226,7 +226,7 @@ body {
     cursor: pointer;
     position: relative;
     transition: all var(--transition);
-    min-height: 60px;
+    min-height: 40px;
 }
 
 .calendar-day:hover {
