@@ -500,5 +500,28 @@
         console.log('window.calendar:', typeof window.calendar);
         console.log('window.app:', typeof window.app);
 </script>
+        <!-- Modal: Confirmação de Exclusão -->
+<div id="modal-confirm-delete" class="modal">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h3>⚠️ Confirmar Exclusão</h3>
+            <button class="btn-close" onclick="closeModal('modal-confirm-delete')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-delete-message">Tem certeza que deseja excluir este casamento?</p>
+            <p style="color: #dc3545; font-weight: 500; margin-top: 1rem;">
+                Esta ação <strong>não pode ser desfeita</strong>.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-confirm-delete')">
+                Cancelar
+            </button>
+            <button class="btn-danger" id="btn-confirm-delete">
+                🗑️ Excluir
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
