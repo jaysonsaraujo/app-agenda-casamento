@@ -161,49 +161,67 @@ class WeddingSchedulerApp {
         this.openModal('modal-wedding-form');
     }
 
-    async saveWedding() {
-        try {
-            const formData = this.collectFormData();
-            
-            if (!window.validator.validateWeddingForm(formData)) {
-                window.validator.showFormErrors('wedding-form');
-                this.showNotification('Por favor, corrija os erros no formulário', 'error');
-                return;
-            }
-            
-            if (!await window.validator.validateWeddingConflicts(formData)) {
-                window.validator.showFormErrors('wedding-form');
-                this.showNotification('Existem conflitos com este agendamento', 'error');
-                return;
-            }
-            
-            this.showLoading('Salvando casamento...');
-            
-            let result;
-            if (this.editingWeddingId) {
-                const statusSelect = document.getElementById('wedding-status');
-                if (statusSelect) {
-                    formData.status = statusSelect.value;
-                }
-                result = await window.db.updateWedding(this.editingWeddingId, formData);
-            } else {
-                result = await window.db.createWedding(formData);
-            }
-            
-            this.closeModal('modal-wedding-form');
-            window.calendar.refresh();
-            
-            this.showNotification(
-                this.editingWeddingId ? 'Casamento atualizado com sucesso!' : 'Casamento agendado com sucesso!',
-                'success'
-            );
-        } catch (error) {
-            console.error('Erro ao salvar casamento:', error);
-            this.showNotification('Erro ao salvar casamento: ' + error.message, 'error');
-        } finally {
-            this.hideLoading();
+   async saveWedding() {
+    try {
+        const formData = this.collectFormData();
+        
+        if (!window.validator.validateWeddingForm(formData)) {
+            window.validator.showFormErrors('wedding-form');
+            this.showNotification('Por favor, corrija os erros no formulário', 'error');
+            return;
         }
+        
+        if (!await window.validator.validateWeddingConflicts(formData)) {
+            window.validator.showFormErrors('wedding-form');
+            this.showNotification('Existem conflitos com este agendamento', 'error');
+            return;
+        }
+        
+        // === NOVA PARTE: Feedback visual no botão de salvar ===
+        const saveBtn = document.querySelector('#wedding-form button[type="submit"]');
+        const originalText = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Salvando...';
+        saveBtn.classList.add('loading');
+
+        // === FIM DA NOVA PARTE ===
+
+        this.showLoading('Salvando casamento...');
+        
+        let result;
+        if (this.editingWeddingId) {
+            const statusSelect = document.getElementById('wedding-status');
+            if (statusSelect) {
+                formData.status = statusSelect.value;
+            }
+            result = await window.db.updateWedding(this.editingWeddingId, formData);
+        } else {
+            result = await window.db.createWedding(formData);
+        }
+        
+        this.closeModal('modal-wedding-form');
+        window.calendar.refresh();
+        
+        this.showNotification(
+            this.editingWeddingId ? 'Casamento atualizado com sucesso!' : 'Casamento agendado com sucesso!',
+            'success'
+        );
+    } catch (error) {
+        console.error('Erro ao salvar casamento:', error);
+        this.showNotification('Erro ao salvar casamento: ' + error.message, 'error');
+    } finally {
+        // === NOVA PARTE: Restaurar o botão ao final (mesmo com erro) ===
+        const saveBtn = document.querySelector('#wedding-form button[type="submit"]');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+            saveBtn.classList.remove('loading');
+        }
+        // === FIM DA NOVA PARTE ===
+        
+        this.hideLoading();
     }
+}
 
     collectFormData() {
         const transferType = document.querySelector('input[name="transfer_type"]:checked').value;
