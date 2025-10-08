@@ -18,6 +18,33 @@ class WeddingSchedulerApp {
 
             await this.loadConfig();
             window.calendar.init();
+
+    async init() {
+        try {
+            console.log('🚀 Inicializando aplicação...');
+            
+            const connected = await window.checkSupabaseConnection();
+            if (!connected) {
+                this.showNotification('Erro ao conectar com o banco de dados', 'error');
+                return;
+            }
+
+            await this.loadConfig();
+            window.calendar.init();
+            
+            // ADICIONAR ESTA LINHA
+            window.searchManager.init();
+            
+            this.setupEventListeners();
+            await this.loadInitialData();
+            
+            console.log('✅ Aplicação iniciada com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar:', error);
+            this.showNotification('Erro ao inicializar aplicação: ' + error.message, 'error');
+        }
+    }
+            
             this.setupEventListeners();
             setupEventListeners() {
         // Navegação
