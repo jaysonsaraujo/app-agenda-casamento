@@ -1233,3 +1233,28 @@ body {
   transform: none;
   cursor: not-allowed;
 }
+/* Notificações animadas */
+.notification {
+  animation: slideIn 0.3s ease forwards;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.notification.success { border-left: 4px solid #28a745; }
+.notification.error { border-left: 4px solid #dc3545; }
+.notification.warning { border-left: 4px solid #ffc107; }
+.notification.info { border-left: 4px solid #17a2b8; }
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-close {
+  transition: color 0.2s;
+}
+.notification-close:hover {
+  color: #dc3545;
+}
