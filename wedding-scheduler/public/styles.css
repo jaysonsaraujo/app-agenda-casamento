@@ -1406,3 +1406,24 @@ input.error, select.error, textarea.error {
 .active-filter .remove:hover {
   opacity: 1;
 }
+/* Animação de entrada dos resultados */
+.search-results .result-item {
+  animation: fadeInUp 0.3s ease forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Delay para cada item */
+.search-results .result-item:nth-child(1) { animation-delay: 0.05s; }
+.search-results .result-item:nth-child(2) { animation-delay: 0.1s; }
+.search-results .result-item:nth-child(3) { animation-delay: 0.15s; }
+.search-results .result-item:nth-child(4) { animation-delay: 0.2s; }
+.search-results .result-item:nth-child(5) { animation-delay: 0.25s; }
+
