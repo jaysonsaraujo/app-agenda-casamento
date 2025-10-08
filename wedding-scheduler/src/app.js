@@ -58,10 +58,6 @@ class WeddingSchedulerApp {
             this.showSection('calendar');
         });
 
-        document.getElementById('btn-search').addEventListener('click', () => {
-            this.showSection('search');
-        });
-
         document.getElementById('btn-config').addEventListener('click', () => {
             window.location.href = '/config.html';
         });
@@ -103,135 +99,6 @@ class WeddingSchedulerApp {
         window.validator.setupRealtimeValidation('wedding-form');
         window.validator.setupRealtimeValidation('form-add-location');
         window.validator.setupRealtimeValidation('form-add-celebrant');
-
-        // === NOVA FUNÇÃO: Botão de Buscar (filtros) ===
-        document.getElementById('btn-apply-filters').addEventListener('click', async () => {
-            try {
-                this.showLoading('Buscando casamentos...');
-                const filters = {
-                    name: document.getElementById('search-name').value.trim(),
-                    location_id: document.getElementById('search-location').value || null,
-                    celebrant_id: document.getElementById('search-celebrant').value || null,
-                    is_community: document.getElementById('search-type').value || null,
-                    status: document.getElementById('search-status').value || null,
-                    date_start: document.getElementById('search-date-start').value || null,
-                    date_end: document.getElementById('search-date-end').value || null,
-                };
-
-                const { data: results, error } = await window.supabaseClient
-                    .from('weddings')
-                    .select('*')
-                    .order('wedding_date', { ascending: true });
-
-                if (error) throw error;
-
-                let filtered = results;
-
-                if (filters.name) {
-                    const searchLower = filters.name.toLowerCase();
-                    filtered = filtered.filter(w =>
-                        (w.bride_name?.toLowerCase().includes(searchLower) ||
-                         w.groom_name?.toLowerCase().includes(searchLower))
-                    );
-                }
-
-                if (filters.location_id) filtered = filtered.filter(w => w.location_id == filters.location_id);
-                if (filters.celebrant_id) filtered = filtered.filter(w => w.celebrant_id == filters.celebrant_id);
-                if (filters.is_community !== null) filtered = filtered.filter(w => w.is_community == (filters.is_community === 'true'));
-                if (filters.status) filtered = filtered.filter(w => w.status === filters.status);
-                if (filters.date_start) filtered = filtered.filter(w => w.wedding_date >= filters.date_start);
-                if (filters.date_end) filtered = filtered.filter(w => w.wedding_date <= filters.date_end);
-
-                const resultsContainer = document.getElementById('search-results');
-                const pagination = document.getElementById('pagination');
-                const countEl = document.getElementById('results-count');
-
-                countEl.textContent = `${filtered.length} resultado(s) encontrado(s)`;
-
-                if (filtered.length === 0) {
-                    resultsContainer.innerHTML = `
-                        <div class="results-empty">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.3;">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.35-4.35"></path>
-                            </svg>
-                            <p>Nenhum resultado encontrado.</p>
-                        </div>
-                    `;
-                    pagination.style.display = 'none';
-                    return;
-                }
-
-                resultsContainer.innerHTML = filtered.map((w, i) => `
-                    <div class="result-item" style="opacity:0; animation-delay:${i * 0.05}s">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                            <h4 style="margin:0; color:#007AFF;">${w.bride_name} & ${w.groom_name}</h4>
-                            <span style="font-size:0.85rem; color:#666;">${w.wedding_date}</span>
-                        </div>
-                        <div style="display:flex; gap:1rem; margin-bottom:0.5rem; font-size:0.9rem; color:#555;">
-                            <span>📍 ${w.location_name || 'Local não informado'}</span>
-                            <span>👤 ${w.celebrant_title} ${w.celebrant_name}</span>
-                        </div>
-                        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-                            <span style="background:#e7f3ff; color:#007AFF; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.85rem;">
-                                ${w.is_community ? 'Comunitário' : 'Individual'}
-                            </span>
-                            <span style="background:${this.getStatusColor(w.status)}; color:white; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.85rem;">
-                                ${this.getStatusLabel(w.status)}
-                            </span>
-                        </div>
-                        <div style="margin-top:0.5rem; font-size:0.9rem; color:#666;">
-                            ${w.observações || '<em>Sem observações</em>'}
-                        </div>
-                    </div>
-                `).join('');
-
-                pagination.style.display = filtered.length > 10 ? 'block' : 'none';
-
-                const activeFilters = document.getElementById('active-filters');
-                const filterList = [];
-                if (filters.name) filterList.push(`Nome: ${filters.name} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
-                if (filters.location_id) {
-                    const opt = document.getElementById('search-location').selectedOptions[0];
-                    filterList.push(`Local: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
-                }
-                if (filters.celebrant_id) {
-                    const opt = document.getElementById('search-celebrant').selectedOptions[0];
-                    filterList.push(`Celebrante: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
-                }
-                if (filters.is_community !== null) {
-                    filterList.push(`Tipo: ${filters.is_community === 'true' ? 'Comunitário' : 'Individual'} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
-                }
-                if (filters.status) {
-                    const map = { 'AGENDADO': 'Agendado', 'REALIZADO': 'Realizado', 'CANCELADO': 'Cancelado' };
-                    filterList.push(`Status: ${map[filters.status]} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
-                }
-                if (filters.date_start) filterList.push(`De: ${filters.date_start} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
-                if (filters.date_end) filterList.push(`Até: ${filters.date_end} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
-
-                activeFilters.innerHTML = filterList.length > 0
-                    ? filterList.map(f => `<span class="active-filter">${f}</span>`).join(' ')
-                    : '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
-
-            } catch (error) {
-                console.error('Erro ao buscar:', error);
-                this.showNotification('Erro ao buscar casamentos', 'error');
-            } finally {
-                this.hideLoading();
-            }
-        });
-
-        // === Botão Limpar Filtros ===
-        document.getElementById('btn-clear-filters').addEventListener('click', () => {
-            document.getElementById('search-name').value = '';
-            document.getElementById('search-date-start').value = '';
-            document.getElementById('search-date-end').value = '';
-            document.getElementById('search-location').value = '';
-            document.getElementById('search-celebrant').value = '';
-            document.getElementById('search-type').value = '';
-            document.getElementById('search-status').value = '';
-            document.getElementById('active-filters').innerHTML = '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
-        });
     }
 
     showSection(section) {
@@ -310,12 +177,6 @@ class WeddingSchedulerApp {
                 return;
             }
             
-            const saveBtn = document.querySelector('#wedding-form button[type="submit"]');
-            const originalText = saveBtn.textContent;
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Salvando...';
-            saveBtn.classList.add('loading');
-
             this.showLoading('Salvando casamento...');
             
             let result;
@@ -340,12 +201,6 @@ class WeddingSchedulerApp {
             console.error('Erro ao salvar casamento:', error);
             this.showNotification('Erro ao salvar casamento: ' + error.message, 'error');
         } finally {
-            const saveBtn = document.querySelector('#wedding-form button[type="submit"]');
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.textContent = 'Salvar';
-                saveBtn.classList.remove('loading');
-            }
             this.hideLoading();
         }
     }
@@ -450,73 +305,24 @@ class WeddingSchedulerApp {
         
         try {
             const wedding = await window.db.getWedding(this.editingWeddingId);
-            const coupleName = `${wedding.bride_name} & ${wedding.groom_name}`;
             
-            const modal = document.getElementById('modal-confirm-delete');
-            const messageEl = document.getElementById('confirm-delete-message');
-            const confirmBtn = document.getElementById('btn-confirm-delete');
-            
-            messageEl.innerHTML = `Tem certeza que deseja excluir o casamento de <strong>${coupleName}</strong>?`;
-            
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-            
-            const confirmed = await new Promise((resolve) => {
-                const onConfirm = () => {
-                    cleanup();
-                    resolve(true);
-                };
-                const onCancel = () => {
-                    cleanup();
-                    resolve(false);
-                };
-                const cleanup = () => {
-                    confirmBtn.removeEventListener('click', onConfirm);
-                    document.querySelectorAll('#modal-confirm-delete .btn-close, .btn-secondary').forEach(btn => {
-                        btn.removeEventListener('click', onCancel);
-                    });
-                    modal.classList.remove('show');
-                    document.body.style.overflow = '';
-                };
-                
-                confirmBtn.addEventListener('click', onConfirm);
-                document.querySelectorAll('#modal-confirm-delete .btn-close, .btn-secondary').forEach(btn => {
-                    btn.addEventListener('click', onCancel);
-                });
-            });
+            const confirmed = confirm(`Tem certeza que deseja excluir o casamento de ${wedding.bride_name} & ${wedding.groom_name}?\n\nEsta ação não pode ser desfeita!`);
             
             if (!confirmed) return;
-
-            const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
-            const originalText = deleteBtn.innerHTML;
-            deleteBtn.disabled = true;
-            deleteBtn.innerHTML = '🗑️ Excluindo...';
             
             this.showLoading('Excluindo casamento...');
             
             await window.db.deleteWedding(this.editingWeddingId);
             
-            const modalForm = document.getElementById('modal-wedding-form');
-            modalForm.style.opacity = '0';
-            modalForm.style.transition = 'opacity 0.3s ease';
-            
-            setTimeout(() => {
-                this.closeModal('modal-wedding-form');
-                modalForm.style.opacity = '';
-            }, 200);
-            
+            this.closeModal('modal-wedding-form');
             this.hideLoading();
+            
             window.calendar.refresh();
             
-            this.showNotification(`Casamento de ${coupleName} excluído com sucesso!`, 'success');
+            this.showNotification('Casamento excluído com sucesso!', 'success');
             
             this.editingWeddingId = null;
         } catch (error) {
-            const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
-            if (deleteBtn) {
-                deleteBtn.disabled = false;
-                deleteBtn.innerHTML = '🗑️ Excluir';
-            }
             this.hideLoading();
             console.error('Erro ao excluir:', error);
             this.showNotification('Erro ao excluir casamento', 'error');
@@ -561,6 +367,7 @@ class WeddingSchedulerApp {
         try {
             const locations = await window.db.getLocations();
             const select = document.getElementById('location');
+            
             select.innerHTML = '<option value="">Selecione...</option>';
             locations.forEach(location => {
                 const option = document.createElement('option');
@@ -577,6 +384,7 @@ class WeddingSchedulerApp {
         try {
             const celebrants = await window.db.getCelebrants();
             const select = document.getElementById('celebrant');
+            
             select.innerHTML = '<option value="">Selecione...</option>';
             celebrants.forEach(celebrant => {
                 const option = document.createElement('option');
@@ -692,25 +500,6 @@ class WeddingSchedulerApp {
     hideLoading() {
         document.getElementById('app-loading')?.remove();
     }
-
-    // === FUNÇÕES NOVAS: Status de status ===
-    getStatusColor(status) {
-        switch (status) {
-            case 'AGENDADO': return '#007AFF';
-            case 'REALIZADO': return '#28a745';
-            case 'CANCELADO': return '#dc3545';
-            default: return '#6c757d';
-        }
-    }
-
-    getStatusLabel(status) {
-        switch (status) {
-            case 'AGENDADO': return '📅 Agendado';
-            case 'REALIZADO': return '✅ Realizado';
-            case 'CANCELADO': return '❌ Cancelado';
-            default: return status;
-        }
-    }
 }
 
 window.app = new WeddingSchedulerApp();
@@ -718,6 +507,5 @@ window.closeModal = (modalId) => window.app.closeModal(modalId);
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, iniciando app...');
-    console.log('🔵 Body iniciado');
     window.app.init();
 });
