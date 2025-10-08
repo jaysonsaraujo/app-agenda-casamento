@@ -576,6 +576,51 @@ async deleteWedding() {
         }
     }
 
+    // === FUNÇÃO DE EXPORTAR EXCEL (mock) ===
+async exportExcel() {
+    // Simula um tempo de processamento
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // === AQUI VOCÊ ADICIONA A LÓGICA REAL DEPOIS ===
+    // Ex: chamar window.db.exportToExcel()
+    // Ex: gerar CSV com dados e baixar
+    
+    // Por enquanto, apenas simula
+    console.log('Exportando Excel...');
+    
+    // Exemplo de download (opcional)
+    const data = 'Título,Data,Noiva,Noivo,Status\nExemplo,2025-04-05,Maria,João,AGENDADO';
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'casamentos.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// === FUNÇÃO DE EXPORTAR PDF (mock) ===
+async exportPDF() {
+    // Simula um tempo de processamento
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // === AQUI VOCÊ ADICIONA A LÓGICA REAL DEPOIS ===
+    // Ex: usar jsPDF, html2pdf.js, ou chamada ao backend
+    
+    // Por enquanto, apenas simula
+    console.log('Exportando PDF...');
+    
+    // Exemplo de download (opcional)
+    const data = 'Casamentos Exportados\n\n1. Maria & João - 05/04/2025\n2. Ana & Pedro - 12/04/2025';
+    const blob = new Blob([data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'casamentos.pdf';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
     showNotification(message, type = 'info') {
         const container = document.getElementById('notification-container');
         
