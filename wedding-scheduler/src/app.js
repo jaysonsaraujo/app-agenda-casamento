@@ -318,34 +318,58 @@ class WeddingSchedulerApp {
         document.getElementById('wedding-status').value = currentStatus || 'AGENDADO';
     }
 
-    async deleteWedding() {
-        if (!this.editingWeddingId) return;
+async deleteWedding() {
+    if (!this.editingWeddingId) return;
+    
+    try {
+        const wedding = await window.db.getWedding(this.editingWeddingId);
+        const coupleName = `${wedding.bride_name} & ${wedding.groom_name}`;
         
-        try {
-            const wedding = await window.db.getWedding(this.editingWeddingId);
-            
-            const confirmed = confirm(`Tem certeza que deseja excluir o casamento de ${wedding.bride_name} & ${wedding.groom_name}?\n\nEsta ação não pode ser desfeita!`);
-            
-            if (!confirmed) return;
-            
-            this.showLoading('Excluindo casamento...');
-            
-            await window.db.deleteWedding(this.editingWeddingId);
-            
+        // === MELHORIA: Confirmação mais bonita e segura ===
+        const confirmed = confirm(`❌ EXCLUSÃO PERMANENTE\n\nTem certeza que deseja excluir o casamento de ${coupleName}?\n\nEsta ação NÃO pode ser desfeita!`);
+        
+        if (!confirmed) return;
+
+        // === MELHORIA: Feedback visual no botão de excluir ===
+        const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '🗑️ Excluindo...';
+        
+        this.showLoading('Excluindo casamento...');
+        
+        await window.db.deleteWedding(this.editingWeddingId);
+        
+        // === MELHORIA: Animação suave de saída ===
+        const modal = document.getElementById('modal-wedding-form');
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.3s ease';
+        
+        setTimeout(() => {
             this.closeModal('modal-wedding-form');
-            this.hideLoading();
-            
-            window.calendar.refresh();
-            
-            this.showNotification('Casamento excluído com sucesso!', 'success');
-            
-            this.editingWeddingId = null;
-        } catch (error) {
-            this.hideLoading();
-            console.error('Erro ao excluir:', error);
-            this.showNotification('Erro ao excluir casamento', 'error');
+            modal.style.opacity = '';
+        }, 200);
+        
+        this.hideLoading();
+        
+        window.calendar.refresh();
+        
+        this.showNotification(`Casamento de ${coupleName} excluído com sucesso!`, 'success');
+        
+        this.editingWeddingId = null;
+    } catch (error) {
+        // === MELHORIA: Restaura botão mesmo com erro ===
+        const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '🗑️ Excluir';
         }
+        
+        this.hideLoading();
+        console.error('Erro ao excluir:', error);
+        this.showNotification('Erro ao excluir casamento', 'error');
     }
+}
 
     resetWeddingForm() {
         this.editingWeddingId = null;
