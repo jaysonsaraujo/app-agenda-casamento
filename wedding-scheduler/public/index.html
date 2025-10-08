@@ -45,6 +45,135 @@
 
     <!-- Main Content -->
     <main class="main-content">
+
+    <main class="main-content">
+        <!-- Seção de Busca e Filtros -->
+        <section id="search-section" class="content-section">
+            <div class="search-container">
+                <!-- Header de Busca -->
+                <div class="search-header">
+                    <h2>🔍 Busca e Filtros</h2>
+                    <button class="btn-secondary" id="btn-toggle-filters">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span id="filter-toggle-text">Mostrar Filtros</span>
+                    </button>
+                </div>
+
+                <!-- Painel de Filtros -->
+                <div id="filters-panel" class="filters-panel" style="display: none;">
+                    <div class="filters-grid">
+                        <!-- Busca por Nome -->
+                        <div class="filter-group">
+                            <label for="search-name">Nome dos Noivos</label>
+                            <input type="text" id="search-name" placeholder="Digite o nome..." class="uppercase-input">
+                        </div>
+
+                        <!-- Período -->
+                        <div class="filter-group">
+                            <label for="search-date-start">Data Inicial</label>
+                            <input type="date" id="search-date-start">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="search-date-end">Data Final</label>
+                            <input type="date" id="search-date-end">
+                        </div>
+
+                        <!-- Local -->
+                        <div class="filter-group">
+                            <label for="search-location">Local</label>
+                            <select id="search-location">
+                                <option value="">Todos os locais</option>
+                            </select>
+                        </div>
+
+                        <!-- Celebrante -->
+                        <div class="filter-group">
+                            <label for="search-celebrant">Celebrante</label>
+                            <select id="search-celebrant">
+                                <option value="">Todos os celebrantes</option>
+                            </select>
+                        </div>
+
+                        <!-- Tipo -->
+                        <div class="filter-group">
+                            <label for="search-type">Tipo</label>
+                            <select id="search-type">
+                                <option value="">Todos os tipos</option>
+                                <option value="false">Individual</option>
+                                <option value="true">Comunitário</option>
+                            </select>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="filter-group">
+                            <label for="search-status">Status</label>
+                            <select id="search-status">
+                                <option value="">Todos os status</option>
+                                <option value="AGENDADO">Agendado</option>
+                                <option value="REALIZADO">Realizado</option>
+                                <option value="CANCELADO">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Ações dos Filtros -->
+                    <div class="filters-actions">
+                        <button class="btn-secondary" id="btn-clear-filters">
+                            🗑️ Limpar Filtros
+                        </button>
+                        <button class="btn-primary" id="btn-apply-filters">
+                            🔍 Buscar
+                        </button>
+                    </div>
+
+                    <!-- Indicadores de Filtros Ativos -->
+                    <div id="active-filters" class="active-filters"></div>
+                </div>
+
+                <!-- Controles de Resultados -->
+                <div class="results-controls">
+                    <div class="results-info">
+                        <span id="results-count">0 resultados encontrados</span>
+                    </div>
+                    <div class="results-actions">
+                        <label for="results-per-page">Mostrar:</label>
+                        <select id="results-per-page">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <button class="btn-secondary" id="btn-export-excel">
+                            📊 Exportar Excel
+                        </button>
+                        <button class="btn-secondary" id="btn-export-pdf">
+                            📄 Exportar PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista de Resultados -->
+                <div id="search-results" class="search-results">
+                    <div class="results-empty">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.3;">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <p>Use os filtros acima para buscar casamentos</p>
+                    </div>
+                </div>
+
+                <!-- Paginação -->
+                <div id="pagination" class="pagination" style="display: none;"></div>
+            </div>
+        </section>
+
+        <!-- Seção do Calendário (já existente) -->
+        <section id="calendar-section" class="content-section active">
+        
         <section id="calendar-section" class="content-section active">
             <div class="calendar-controls">
                 <button class="btn-year" id="btn-prev-year">
