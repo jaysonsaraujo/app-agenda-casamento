@@ -1,4 +1,4 @@
-// app.js completo com melhorias integradas
+// Classe principal da aplicação
 class WeddingSchedulerApp {
     constructor() {
         this.currentModal = null;
@@ -9,15 +9,18 @@ class WeddingSchedulerApp {
     async init() {
         try {
             console.log('🚀 Inicializando aplicação...');
+            
             const connected = await window.checkSupabaseConnection();
             if (!connected) {
                 this.showNotification('Erro ao conectar com o banco de dados', 'error');
                 return;
             }
+
             await this.loadConfig();
             window.calendar.init();
             this.setupEventListeners();
             await this.loadInitialData();
+            
             console.log('✅ Aplicação iniciada com sucesso');
         } catch (error) {
             console.error('❌ Erro ao inicializar:', error);
@@ -101,11 +104,10 @@ class WeddingSchedulerApp {
         window.validator.setupRealtimeValidation('form-add-location');
         window.validator.setupRealtimeValidation('form-add-celebrant');
 
-        // === NOVA PARTE: BUSCA COM FILTROS ===
+        // === NOVA FUNÇÃO: Botão de Buscar (filtros) ===
         document.getElementById('btn-apply-filters').addEventListener('click', async () => {
             try {
-                app.showLoading('Buscando casamentos...');
-
+                this.showLoading('Buscando casamentos...');
                 const filters = {
                     name: document.getElementById('search-name').value.trim(),
                     location_id: document.getElementById('search-location').value || null,
@@ -135,9 +137,7 @@ class WeddingSchedulerApp {
 
                 if (filters.location_id) filtered = filtered.filter(w => w.location_id == filters.location_id);
                 if (filters.celebrant_id) filtered = filtered.filter(w => w.celebrant_id == filters.celebrant_id);
-                if (filters.is_community !== null) {
-                    filtered = filtered.filter(w => w.is_community == (filters.is_community === 'true'));
-                }
+                if (filters.is_community !== null) filtered = filtered.filter(w => w.is_community == (filters.is_community === 'true'));
                 if (filters.status) filtered = filtered.filter(w => w.status === filters.status);
                 if (filters.date_start) filtered = filtered.filter(w => w.wedding_date >= filters.date_start);
                 if (filters.date_end) filtered = filtered.filter(w => w.wedding_date <= filters.date_end);
@@ -181,37 +181,36 @@ class WeddingSchedulerApp {
                             </span>
                         </div>
                         <div style="margin-top:0.5rem; font-size:0.9rem; color:#666;">
-                            ${w.observations || '<em>Sem observações</em>'}
+                            ${w.observações || '<em>Sem observações</em>'}
                         </div>
                     </div>
                 `).join('');
 
                 pagination.style.display = filtered.length > 10 ? 'block' : 'none';
 
-                // === INDICADORES DE FILTROS ATIVOS ===
                 const activeFilters = document.getElementById('active-filters');
                 const filterList = [];
-                if (filters.name) filterList.push(`<span class="active-filter">Nome: ${filters.name} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`);
+                if (filters.name) filterList.push(`Nome: ${filters.name} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
                 if (filters.location_id) {
                     const opt = document.getElementById('search-location').selectedOptions[0];
-                    filterList.push(`<span class="active-filter">Local: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`);
+                    filterList.push(`Local: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
                 }
                 if (filters.celebrant_id) {
                     const opt = document.getElementById('search-celebrant').selectedOptions[0];
-                    filterList.push(`<span class="active-filter">Celebrante: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`);
+                    filterList.push(`Celebrante: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
                 }
                 if (filters.is_community !== null) {
-                    filterList.push(`<span class="active-filter">Tipo: ${filters.is_community === 'true' ? 'Comunitário' : 'Individual'} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`);
+                    filterList.push(`Tipo: ${filters.is_community === 'true' ? 'Comunitário' : 'Individual'} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
                 }
                 if (filters.status) {
                     const map = { 'AGENDADO': 'Agendado', 'REALIZADO': 'Realizado', 'CANCELADO': 'Cancelado' };
-                    filterList.push(`<span class="active-filter">Status: ${map[filters.status]} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`);
+                    filterList.push(`Status: ${map[filters.status]} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
                 }
-                if (filters.date_start) filterList.push(`<span class="active-filter">De: ${filters.date_start} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`);
-                if (filters.date_end) filterList.push(`<span class="active-filter">Até: ${filters.date_end} <span class="remove" onclick="this.parentElement.remove()">×</span></span>`);
+                if (filters.date_start) filterList.push(`De: ${filters.date_start} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+                if (filters.date_end) filterList.push(`Até: ${filters.date_end} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
 
                 activeFilters.innerHTML = filterList.length > 0
-                    ? filterList.join(' ')
+                    ? filterList.map(f => `<span class="active-filter">${f}</span>`).join(' ')
                     : '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
 
             } catch (error) {
@@ -222,6 +221,7 @@ class WeddingSchedulerApp {
             }
         });
 
+        // === Botão Limpar Filtros ===
         document.getElementById('btn-clear-filters').addEventListener('click', () => {
             document.getElementById('search-name').value = '';
             document.getElementById('search-date-start').value = '';
@@ -232,8 +232,6 @@ class WeddingSchedulerApp {
             document.getElementById('search-status').value = '';
             document.getElementById('active-filters').innerHTML = '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
         });
-
-        console.log('✅ Event listeners configurados com sucesso');
     }
 
     showSection(section) {
@@ -262,6 +260,7 @@ class WeddingSchedulerApp {
         if (modal) {
             modal.classList.remove('show');
             document.body.style.overflow = '';
+            
             if (modalId === 'modal-wedding-form') {
                 this.resetWeddingForm();
             }
@@ -277,39 +276,40 @@ class WeddingSchedulerApp {
     showWeddingForm() {
         const form = document.getElementById('wedding-form');
         form.reset();
-
+        
         document.getElementById('display-wedding-id').value = 'Será gerado automaticamente';
         document.getElementById('display-schedule-date').value = window.validator.formatDate(new Date());
         document.getElementById('is-community').value = this.currentWeddingType;
         document.getElementById('display-wedding-type').value = this.currentWeddingType ? 'COMUNITÁRIO' : 'INDIVIDUAL';
-
+        
         if (window.calendar.selectedDate) {
             document.getElementById('wedding-date').value = window.calendar.selectedDate;
             this.updateProclamationDates(window.calendar.selectedDate);
         }
-
+        
         window.validator.clearErrors();
         form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
         form.querySelectorAll('.error-message').forEach(el => el.remove());
-
+        
         this.openModal('modal-wedding-form');
     }
 
     async saveWedding() {
         try {
             const formData = this.collectFormData();
+            
             if (!window.validator.validateWeddingForm(formData)) {
                 window.validator.showFormErrors('wedding-form');
                 this.showNotification('Por favor, corrija os erros no formulário', 'error');
                 return;
             }
-
+            
             if (!await window.validator.validateWeddingConflicts(formData)) {
                 window.validator.showFormErrors('wedding-form');
                 this.showNotification('Existem conflitos com este agendamento', 'error');
                 return;
             }
-
+            
             const saveBtn = document.querySelector('#wedding-form button[type="submit"]');
             const originalText = saveBtn.textContent;
             saveBtn.disabled = true;
@@ -317,7 +317,7 @@ class WeddingSchedulerApp {
             saveBtn.classList.add('loading');
 
             this.showLoading('Salvando casamento...');
-
+            
             let result;
             if (this.editingWeddingId) {
                 const statusSelect = document.getElementById('wedding-status');
@@ -328,10 +328,10 @@ class WeddingSchedulerApp {
             } else {
                 result = await window.db.createWedding(formData);
             }
-
+            
             this.closeModal('modal-wedding-form');
             window.calendar.refresh();
-
+            
             this.showNotification(
                 this.editingWeddingId ? 'Casamento atualizado com sucesso!' : 'Casamento agendado com sucesso!',
                 'success'
@@ -343,7 +343,7 @@ class WeddingSchedulerApp {
             const saveBtn = document.querySelector('#wedding-form button[type="submit"]');
             if (saveBtn) {
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Salvar Evento'
+                saveBtn.textContent = 'Salvar';
                 saveBtn.classList.remove('loading');
             }
             this.hideLoading();
@@ -352,7 +352,7 @@ class WeddingSchedulerApp {
 
     collectFormData() {
         const transferType = document.querySelector('input[name="transfer_type"]:checked').value;
-
+        
         const data = {
             interview_date: document.getElementById('interview-date').value,
             bride_name: document.getElementById('bride-name').value,
@@ -369,7 +369,7 @@ class WeddingSchedulerApp {
             observations: document.getElementById('observations').value,
             system_message: document.getElementById('system-message').value
         };
-
+        
         return data;
     }
 
@@ -377,13 +377,13 @@ class WeddingSchedulerApp {
         try {
             console.log('Editando casamento:', weddingId);
             this.editingWeddingId = weddingId;
-
+            
             const wedding = await window.db.getWedding(weddingId);
             this.currentWeddingType = wedding.is_community;
-
+            
             this.fillWeddingForm(wedding);
             this.addEditActions(wedding.status);
-
+            
             this.openModal('modal-wedding-form');
         } catch (error) {
             console.error('Erro ao carregar casamento:', error);
@@ -396,7 +396,7 @@ class WeddingSchedulerApp {
         document.getElementById('display-schedule-date').value = window.validator.formatDate(new Date(wedding.schedule_date + 'T12:00:00'));
         document.getElementById('is-community').value = wedding.is_community;
         document.getElementById('display-wedding-type').value = wedding.is_community ? 'COMUNITÁRIO' : 'INDIVIDUAL';
-
+        
         document.getElementById('interview-date').value = wedding.interview_date ? wedding.interview_date.substring(0, 16) : '';
         document.getElementById('bride-name').value = wedding.bride_name;
         document.getElementById('bride-whatsapp').value = wedding.bride_whatsapp;
@@ -406,27 +406,29 @@ class WeddingSchedulerApp {
         document.getElementById('wedding-time').value = wedding.wedding_time;
         document.getElementById('location').value = wedding.location_id;
         document.getElementById('celebrant').value = wedding.celebrant_id;
-
+        
         const transferRadio = document.querySelector(`input[name="transfer_type"][value="${wedding.transfer_type || 'none'}"]`);
         if (transferRadio) transferRadio.checked = true;
-
+        
         document.getElementById('civil-effect').checked = wedding.with_civil_effect;
         document.getElementById('observations').value = wedding.observations || '';
         document.getElementById('system-message').value = wedding.system_message || '';
-
+        
         this.updateProclamationDates(wedding.wedding_date);
     }
 
     addEditActions(currentStatus) {
         let actionsExtra = document.getElementById('form-actions-extra');
+        
         if (!actionsExtra) {
             actionsExtra = document.createElement('div');
             actionsExtra.id = 'form-actions-extra';
             actionsExtra.style.cssText = 'display:flex; gap:1rem; padding-top:1rem; border-top:1px solid var(--border); margin-top:1rem;';
+            
             const formActions = document.querySelector('#wedding-form .form-actions');
             formActions.parentNode.insertBefore(actionsExtra, formActions);
         }
-
+        
         actionsExtra.innerHTML = `
             <div style="flex:1; display:flex; gap:0.5rem; align-items:center;">
                 <button type="button" class="btn-secondary" onclick="app.deleteWedding()" style="background-color:var(--danger-color); color:white; border:none;">
@@ -439,39 +441,75 @@ class WeddingSchedulerApp {
                 </select>
             </div>
         `;
-
+        
         document.getElementById('wedding-status').value = currentStatus || 'AGENDADO';
     }
 
     async deleteWedding() {
         if (!this.editingWeddingId) return;
-
+        
         try {
             const wedding = await window.db.getWedding(this.editingWeddingId);
             const coupleName = `${wedding.bride_name} & ${wedding.groom_name}`;
-            const confirmed = confirm(`❌ EXCLUSÃO PERMANENTE\n\nTem certeza que deseja excluir o casamento de ${coupleName}?\n\nEsta ação NÃO pode ser desfeita!`);
+            
+            const modal = document.getElementById('modal-confirm-delete');
+            const messageEl = document.getElementById('confirm-delete-message');
+            const confirmBtn = document.getElementById('btn-confirm-delete');
+            
+            messageEl.innerHTML = `Tem certeza que deseja excluir o casamento de <strong>${coupleName}</strong>?`;
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            const confirmed = await new Promise((resolve) => {
+                const onConfirm = () => {
+                    cleanup();
+                    resolve(true);
+                };
+                const onCancel = () => {
+                    cleanup();
+                    resolve(false);
+                };
+                const cleanup = () => {
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    document.querySelectorAll('#modal-confirm-delete .btn-close, .btn-secondary').forEach(btn => {
+                        btn.removeEventListener('click', onCancel);
+                    });
+                    modal.classList.remove('show');
+                    document.body.style.overflow = '';
+                };
+                
+                confirmBtn.addEventListener('click', onConfirm);
+                document.querySelectorAll('#modal-confirm-delete .btn-close, .btn-secondary').forEach(btn => {
+                    btn.addEventListener('click', onCancel);
+                });
+            });
+            
             if (!confirmed) return;
 
             const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
             const originalText = deleteBtn.innerHTML;
             deleteBtn.disabled = true;
             deleteBtn.innerHTML = '🗑️ Excluindo...';
-
+            
             this.showLoading('Excluindo casamento...');
+            
             await window.db.deleteWedding(this.editingWeddingId);
-
-            const modal = document.getElementById('modal-wedding-form');
-            modal.style.opacity = '0';
-            modal.style.transition = 'opacity 0.3s ease';
-
+            
+            const modalForm = document.getElementById('modal-wedding-form');
+            modalForm.style.opacity = '0';
+            modalForm.style.transition = 'opacity 0.3s ease';
+            
             setTimeout(() => {
                 this.closeModal('modal-wedding-form');
-                modal.style.opacity = '';
+                modalForm.style.opacity = '';
             }, 200);
-
+            
             this.hideLoading();
             window.calendar.refresh();
+            
             this.showNotification(`Casamento de ${coupleName} excluído com sucesso!`, 'success');
+            
             this.editingWeddingId = null;
         } catch (error) {
             const deleteBtn = document.querySelector('#form-actions-extra button[type="button"]');
@@ -489,10 +527,12 @@ class WeddingSchedulerApp {
         this.editingWeddingId = null;
         this.currentWeddingType = null;
         document.getElementById('wedding-form').reset();
+        
         const actionsExtra = document.getElementById('form-actions-extra');
         if (actionsExtra) {
             actionsExtra.remove();
         }
+        
         window.validator.clearErrors();
     }
 
@@ -504,9 +544,10 @@ class WeddingSchedulerApp {
             document.getElementById('wedding-date-display').textContent = '--/--/----';
             return;
         }
-
+        
         try {
             const sundays = await window.db.calculateProclamationSundays(weddingDate);
+            
             document.getElementById('first-sunday').textContent = window.validator.formatDate(new Date(sundays.first_sunday + 'T12:00:00'));
             document.getElementById('second-sunday').textContent = window.validator.formatDate(new Date(sundays.second_sunday + 'T12:00:00'));
             document.getElementById('third-sunday').textContent = window.validator.formatDate(new Date(sundays.third_sunday + 'T12:00:00'));
@@ -556,19 +597,19 @@ class WeddingSchedulerApp {
                 capacity: document.getElementById('new-location-capacity').value ? 
                          parseInt(document.getElementById('new-location-capacity').value) : null
             };
-
+            
             if (!window.validator.validateLocationForm(formData)) {
                 window.validator.showFormErrors('form-add-location');
                 return;
             }
-
+            
             await window.db.addLocation(formData);
-
+            
             this.closeModal('modal-add-location');
             document.getElementById('form-add-location').reset();
-
+            
             await this.loadLocations();
-
+            
             this.showNotification('Local adicionado com sucesso!', 'success');
         } catch (error) {
             console.error('Erro ao adicionar local:', error);
@@ -583,19 +624,19 @@ class WeddingSchedulerApp {
                 title: document.getElementById('new-celebrant-title').value,
                 phone: document.getElementById('new-celebrant-phone').value
             };
-
+            
             if (!window.validator.validateCelebrantForm(formData)) {
                 window.validator.showFormErrors('form-add-celebrant');
                 return;
             }
-
+            
             await window.db.addCelebrant(formData);
-
+            
             this.closeModal('modal-add-celebrant');
             document.getElementById('form-add-celebrant').reset();
-
+            
             await this.loadCelebrants();
-
+            
             this.showNotification('Celebrante adicionado com sucesso!', 'success');
         } catch (error) {
             console.error('Erro ao adicionar celebrante:', error);
@@ -605,36 +646,34 @@ class WeddingSchedulerApp {
 
     showNotification(message, type = 'info') {
         const container = document.getElementById('notification-container');
-
+        
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-icon">${this.getNotificationIcon(type)}</div>
-            <div class="notification-content">
-                <div class="notification-message">${message}</div>
-            </div>
-            <button class="notification-close">&times;</button>
-        `;
-
-        container.appendChild(notification);
-
-        setTimeout(() => {
-            notification.remove();
-        }, 5000);
-
-        notification.querySelector('.notification-close').addEventListener('click', () => {
-            notification.remove();
-        });
-    }
-
-    getNotificationIcon(type) {
+        
         const icons = {
             success: '✅',
             error: '❌',
             warning: '⚠️',
             info: 'ℹ️'
         };
-        return icons[type] || 'ℹ️';
+        
+        notification.innerHTML = `
+            <div class="notification-icon">${icons[type]}</div>
+            <div class="notification-content">
+                <div class="notification-message">${message}</div>
+            </div>
+            <button class="notification-close">&times;</button>
+        `;
+        
+        container.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+        
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.remove();
+        });
     }
 
     showLoading(message = 'Carregando...') {
@@ -654,7 +693,7 @@ class WeddingSchedulerApp {
         document.getElementById('app-loading')?.remove();
     }
 
-    // === NOVAS FUNÇÕES PARA FILTROS ===
+    // === FUNÇÕES NOVAS: Status de status ===
     getStatusColor(status) {
         switch (status) {
             case 'AGENDADO': return '#007AFF';
@@ -679,5 +718,6 @@ window.closeModal = (modalId) => window.app.closeModal(modalId);
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, iniciando app...');
+    console.log('🔵 Body iniciado');
     window.app.init();
 });
