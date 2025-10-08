@@ -8,103 +8,76 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="styles.css">
-    
-    <script>
-        console.log('🔵 HTML carregado');
-    </script>
 </head>
 <body>
-    <script>console.log('🔵 Body iniciado');</script>
-    
-    <!-- Header -->
-      <header class="main-header">
+    <header class="main-header">
         <div class="container">
             <h1 id="site-title">Sistema de Agendamento de Casamentos</h1>
             <nav class="main-nav">
                 <button class="nav-btn active" id="btn-calendar">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    Calendário
+                    📅 Calendário
                 </button>
                 <button class="nav-btn" id="btn-search">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
-                    Buscar
+                    🔍 Buscar
                 </button>
                 <button class="nav-btn" id="btn-config">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
-                    </svg>
-                    Configurações
+                    ⚙️ Configurações
                 </button>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main-content">
+        <section id="calendar-section" class="content-section active">
+            <div class="calendar-controls">
+                <button class="btn-year" id="btn-prev-year">‹</button>
+                <h2 id="current-year">2024</h2>
+                <button class="btn-year" id="btn-next-year">›</button>
+            </div>
+            <div id="calendar-container" class="calendar-grid">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p>Carregando calendário...</p>
+                </div>
+            </div>
+        </section>
 
-    <main class="main-content">
-        <!-- Seção de Busca e Filtros -->
         <section id="search-section" class="content-section">
             <div class="search-container">
-                <!-- Header de Busca -->
                 <div class="search-header">
                     <h2>🔍 Busca e Filtros</h2>
                     <button class="btn-secondary" id="btn-toggle-filters">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
                         <span id="filter-toggle-text">Mostrar Filtros</span>
                     </button>
                 </div>
 
-                <!-- Painel de Filtros -->
                 <div id="filters-panel" class="filters-panel" style="display: none;">
                     <div class="filters-grid">
-                        <!-- Busca por Nome -->
                         <div class="filter-group">
                             <label for="search-name">Nome dos Noivos</label>
                             <input type="text" id="search-name" placeholder="Digite o nome..." class="uppercase-input">
                         </div>
-
-                        <!-- Período -->
                         <div class="filter-group">
                             <label for="search-date-start">Data Inicial</label>
                             <input type="date" id="search-date-start">
                         </div>
-
                         <div class="filter-group">
                             <label for="search-date-end">Data Final</label>
                             <input type="date" id="search-date-end">
                         </div>
-
-                        <!-- Local -->
                         <div class="filter-group">
                             <label for="search-location">Local</label>
                             <select id="search-location">
                                 <option value="">Todos os locais</option>
                             </select>
                         </div>
-
-                        <!-- Celebrante -->
                         <div class="filter-group">
                             <label for="search-celebrant">Celebrante</label>
                             <select id="search-celebrant">
                                 <option value="">Todos os celebrantes</option>
                             </select>
                         </div>
-
-                        <!-- Tipo -->
                         <div class="filter-group">
                             <label for="search-type">Tipo</label>
                             <select id="search-type">
@@ -113,8 +86,6 @@
                                 <option value="true">Comunitário</option>
                             </select>
                         </div>
-
-                        <!-- Status -->
                         <div class="filter-group">
                             <label for="search-status">Status</label>
                             <select id="search-status">
@@ -126,7 +97,6 @@
                         </div>
                     </div>
 
-                    <!-- Ações dos Filtros -->
                     <div class="filters-actions">
                         <button class="btn-secondary" id="btn-clear-filters">
                             🗑️ Limpar Filtros
@@ -136,14 +106,12 @@
                         </button>
                     </div>
 
-                    <!-- Indicadores de Filtros Ativos -->
                     <div id="active-filters" class="active-filters"></div>
                 </div>
 
-                <!-- Controles de Resultados -->
                 <div class="results-controls">
                     <div class="results-info">
-                        <span id="results-count">0 resultados encontrados</span>
+                        <span id="results-count">0 resultado(s) encontrado(s)</span>
                     </div>
                     <div class="results-actions">
                         <label for="results-per-page">Mostrar:</label>
@@ -162,7 +130,6 @@
                     </div>
                 </div>
 
-                <!-- Lista de Resultados -->
                 <div id="search-results" class="search-results">
                     <div class="results-empty">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.3;">
@@ -173,34 +140,7 @@
                     </div>
                 </div>
 
-                <!-- Paginação -->
                 <div id="pagination" class="pagination" style="display: none;"></div>
-            </div>
-        </section>
-
-        <!-- Seção do Calendário (já existente) -->
-        <section id="calendar-section" class="content-section active">
-        
-        <section id="calendar-section" class="content-section active">
-            <div class="calendar-controls">
-                <button class="btn-year" id="btn-prev-year">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
-                <h2 id="current-year">2024</h2>
-                <button class="btn-year" id="btn-next-year">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-            </div>
-            
-            <div id="calendar-container" class="calendar-grid">
-                <div style="text-align: center; padding: 40px;">
-                    <div class="loading"></div>
-                    <p>Carregando calendário...</p>
-                </div>
             </div>
         </section>
     </main>
@@ -234,18 +174,16 @@
         </div>
     </div>
 
-    <!-- Modal: Wedding Form (versão compacta para teste) -->
+    <!-- Modal: Wedding Form -->
     <div id="modal-wedding-form" class="modal">
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h3>Cadastro de Casamento</h3>
                 <button class="btn-close" onclick="closeModal('modal-wedding-form')">&times;</button>
             </div>
-            
             <form id="wedding-form" class="wedding-form">
                 <input type="hidden" id="wedding-id">
                 <input type="hidden" id="is-community">
-                
                 <section class="form-section">
                     <h4>Informações Básicas</h4>
                     <div class="form-row">
@@ -263,7 +201,6 @@
                         </div>
                     </div>
                 </section>
-
                 <section class="form-section">
                     <h4>Entrevista</h4>
                     <div class="form-group">
@@ -271,7 +208,6 @@
                         <input type="datetime-local" id="interview-date" required>
                     </div>
                 </section>
-
                 <section class="form-section">
                     <h4>Noivos</h4>
                     <div class="form-row">
@@ -295,7 +231,6 @@
                         </div>
                     </div>
                 </section>
-
                 <section class="form-section">
                     <h4>Casamento</h4>
                     <div class="form-row">
@@ -315,7 +250,9 @@
                                 <select id="location" required>
                                     <option value="">Selecione...</option>
                                 </select>
-                                <button type="button" class="btn-add-new" id="btn-add-location">+</button>
+                                <button type="button" class="btn-add-new" id="btn-add-location"
+                                    title="Adicionar novo local"
+                                >+</button>
                             </div>
                         </div>
                         <div class="form-group">
@@ -324,12 +261,13 @@
                                 <select id="celebrant" required>
                                     <option value="">Selecione...</option>
                                 </select>
-                                <button type="button" class="btn-add-new" id="btn-add-celebrant">+</button>
+                                <button type="button" class="btn-add-new" id="btn-add-celebrant"
+                                    title="Adicionar novo celebrante"
+                                >+</button>
                             </div>
                         </div>
                     </div>
                 </section>
-
                 <section class="form-section">
                     <h4>Transferência</h4>
                     <div class="radio-group">
@@ -353,7 +291,6 @@
                         </label>
                     </div>
                 </section>
-
                 <section class="form-section">
                     <h4>Proclames</h4>
                     <div class="proclamation-table">
@@ -371,7 +308,6 @@
                         </div>
                     </div>
                 </section>
-
                 <section class="form-section">
                     <h4>Observações</h4>
                     <div class="form-group">
@@ -383,7 +319,6 @@
                         <textarea id="system-message" rows="2" class="uppercase-input"></textarea>
                     </div>
                 </section>
-
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal('modal-wedding-form')">
                         Cancelar
@@ -465,29 +400,29 @@
         </div>
     </div>
 
-        <!-- Modal: Confirmação de Exclusão -->
-<div id="modal-confirm-delete" class="modal">
-    <div class="modal-content modal-small">
-        <div class="modal-header">
-            <h3>⚠️ Confirmar Exclusão</h3>
-            <button class="btn-close" onclick="closeModal('modal-confirm-delete')">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p id="confirm-delete-message">Tem certeza que deseja excluir este casamento?</p>
-            <p style="color: #dc3545; font-weight: 500; margin-top: 1rem;">
-                Esta ação <strong>não pode ser desfeita</strong>.
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-secondary" onclick="closeModal('modal-confirm-delete')">
-                Cancelar
-            </button>
-            <button class="btn-danger" id="btn-confirm-delete">
-                🗑️ Excluir
-            </button>
+    <!-- Modal: Confirmação de Exclusão -->
+    <div id="modal-confirm-delete" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>⚠️ Confirmar Exclusão</h3>
+                <button class="btn-close" onclick="closeModal('modal-confirm-delete')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-delete-message">Tem certeza que deseja excluir este evento?</p>
+                <p style="color: #dc3545; font-weight: 500; margin-top: 1rem;">
+                    Esta ação <strong>não pode ser desfeita</strong>.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-confirm-delete')">
+                    Cancelar
+                </button>
+                <button class="btn-danger" id="btn-confirm-delete">
+                    🗑️ Excluir
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Tooltip -->
     <div id="calendar-tooltip" class="calendar-tooltip">
@@ -498,54 +433,11 @@
     <div id="notification-container" class="notification-container"></div>
 
     <!-- Scripts -->
-    <script>console.log('🔵 Carregando Supabase...');</script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <script>console.log('🔵 Carregando config/supabase.js');</script>
     <script src="/config/supabase.js"></script>
-    
-    <script>console.log('🔵 Carregando src/database.js');</script>
     <script src="/src/database.js"></script>
-    
-    <script>console.log('🔵 Carregando src/validation.js');</script>
     <script src="/src/validation.js"></script>
-    
-    <script>console.log('🔵 Carregando src/calendar.js');</script>
     <script src="/src/calendar.js"></script>
-    
-    <script>console.log('🔵 Carregando src/app.js');</script>
     <script src="/src/app.js"></script>
-    
-    <script>
-        console.log('🔵 Todos os scripts carregados');
-        console.log('window.supabaseClient:', typeof window.supabaseClient);
-        console.log('window.db:', typeof window.db);
-        console.log('window.validator:', typeof window.validator);
-        console.log('window.calendar:', typeof window.calendar);
-        console.log('window.app:', typeof window.app);
-</script>
-        <!-- Modal: Confirmação de Exclusão -->
-<div id="modal-confirm-delete" class="modal">
-    <div class="modal-content modal-small">
-        <div class="modal-header">
-            <h3>⚠️ Confirmar Exclusão</h3>
-            <button class="btn-close" onclick="closeModal('modal-confirm-delete')">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p id="confirm-delete-message">Tem certeza que deseja excluir este casamento?</p>
-            <p style="color: #dc3545; font-weight: 500; margin-top: 1rem;">
-                Esta ação <strong>não pode ser desfeita</strong>.
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-secondary" onclick="closeModal('modal-confirm-delete')">
-                Cancelar
-            </button>
-            <button class="btn-danger" id="btn-confirm-delete">
-                🗑️ Excluir
-            </button>
-        </div>
-    </div>
-</div>
 </body>
 </html>
