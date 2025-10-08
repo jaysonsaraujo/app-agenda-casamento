@@ -169,7 +169,7 @@ body {
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
     gap: var(--spacing-xl);
 }
 
@@ -226,7 +226,7 @@ body {
     cursor: pointer;
     position: relative;
     transition: all var(--transition);
-    min-height: 60px;
+    min-height: 40px;
 }
 
 .calendar-day:hover {
@@ -1205,4 +1205,5 @@ body {
         flex-direction: column;
     }
 }
+
 
