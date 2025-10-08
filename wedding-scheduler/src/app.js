@@ -56,6 +56,146 @@ class WeddingSchedulerApp {
     setupEventListeners() {
         document.getElementById('btn-calendar').addEventListener('click', () => {
             this.showSection('calendar');
+            // === BUSCA COM FILTROS (nova funcionalidade) ===
+document.getElementById('btn-apply-filters').addEventListener('click', async () => {
+    try {
+        app.showLoading('Buscando casamentos...');
+
+        // === COLETA DE FILTROS ===
+        const filters = {
+            name: document.getElementById('search-name').value.trim(),
+            location_id: document.getElementById('search-location').value || null,
+            celebrant_id: document.getElementById('search-celebrant').value || null,
+            is_community: document.getElementById('search-type').value || null,
+            status: document.getElementById('search-status').value || null,
+            date_start: document.getElementById('search-date-start').value || null,
+            date_end: document.getElementById('search-date-end').value || null,
+        };
+
+        // === BUSCA NO SUPABASE (todos os casamentos) ===
+        const { data: results, error } = await window.supabaseClient
+            .from('weddings')
+            .select('*')
+            .order('wedding_date', { ascending: true });
+
+        if (error) throw error;
+
+        // === APLICA FILTROS NO CLIENTE ===
+        let filtered = results;
+
+        if (filters.name) {
+            const searchLower = filters.name.toLowerCase();
+            filtered = filtered.filter(w =>
+                (w.bride_name?.toLowerCase().includes(searchLower) ||
+                 w.groom_name?.toLowerCase().includes(searchLower))
+            );
+        }
+
+        if (filters.location_id) {
+            filtered = filtered.filter(w => w.location_id == filters.location_id);
+        }
+
+        if (filters.celebrant_id) {
+            filtered = filtered.filter(w => w.celebrant_id == filters.celebrant_id);
+        }
+
+        if (filters.is_community !== null) {
+            filtered = filtered.filter(w => w.is_community == (filters.is_community === 'true'));
+        }
+
+        if (filters.status) {
+            filtered = filtered.filter(w => w.status === filters.status);
+        }
+
+        if (filters.date_start) {
+            filtered = filtered.filter(w => w.wedding_date >= filters.date_start);
+        }
+
+        if (filters.date_end) {
+            filtered = filtered.filter(w => w.wedding_date <= filters.date_end);
+        }
+
+        // === ATUALIZA INTERFACE ===
+        const resultsContainer = document.getElementById('search-results');
+        const pagination = document.getElementById('pagination');
+        const countEl = document.getElementById('results-count');
+
+        countEl.textContent = `${filtered.length} resultado(s) encontrado(s)`;
+
+        if (filtered.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="results-empty">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.3;">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <p>Nenhum resultado encontrado.</p>
+                </div>
+            `;
+            pagination.style.display = 'none';
+            return;
+        }
+
+        // === RENDERIZA RESULTADOS ===
+        resultsContainer.innerHTML = filtered.map((w, i) => `
+            <div class="result-item" style="opacity:0; animation-delay:${i * 0.05}s">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <h4 style="margin:0; color:#007AFF;">${w.bride_name} & ${w.groom_name}</h4>
+                    <span style="font-size:0.85rem; color:#666;">${w.wedding_date}</span>
+                </div>
+                <div style="display:flex; gap:1rem; margin-bottom:0.5rem; font-size:0.9rem; color:#555;">
+                    <span>📍 ${w.location_name || 'Local não informado'}</span>
+                    <span>👤 ${w.celebrant_title} ${w.celebrant_name}</span>
+                </div>
+                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                    <span style="background:#e7f3ff; color:#007AFF; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.85rem;">
+                        ${w.is_community ? 'Comunitário' : 'Individual'}
+                    </span>
+                    <span style="background:${app.getStatusColor(w.status)}; color:white; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.85rem;">
+                        ${app.getStatusLabel(w.status)}
+                    </span>
+                </div>
+                <div style="margin-top:0.5rem; font-size:0.9rem; color:#666;">
+                    ${w.observações || '<em>Sem observações</em>'}
+                </div>
+            </div>
+        `).join('');
+
+        pagination.style.display = filtered.length > 10 ? 'block' : 'none';
+
+        // === INDICADORES DE FILTROS ATIVOS ===
+        const activeFilters = document.getElementById('active-filters');
+        const filterList = [];
+        if (filters.name) filterList.push(`Nome: ${filters.name} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+        if (filters.location_id) {
+            const opt = document.getElementById('search-location').selectedOptions[0];
+            filterList.push(`Local: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+        }
+        if (filters.celebrant_id) {
+            const opt = document.getElementById('search-celebrant').selectedOptions[0];
+            filterList.push(`Celebrante: ${opt.text} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+        }
+        if (filters.is_community !== null) {
+            filterList.push(`Tipo: ${filters.is_community === 'true' ? 'Comunitário' : 'Individual'} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+        }
+        if (filters.status) {
+            const map = { 'AGENDADO': 'Agendado', 'REALIZADO': 'Realizado', 'CANCELADO': 'Cancelado' };
+            filterList.push(`Status: ${map[filters.status]} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+        }
+        if (filters.date_start) filterList.push(`De: ${filters.date_start} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+        if (filters.date_end) filterList.push(`Até: ${filters.date_end} <span class="remove" onclick="this.parentElement.remove()">×</span>`);
+
+        activeFilters.innerHTML = filterList.length > 0
+            ? filterList.map(f => `<span class="active-filter">${f}</span>`).join(' ')
+            : '<span style="color: #666; font-style: italic;">Nenhum filtro aplicado.</span>';
+
+    } catch (error) {
+        console.error('Erro ao buscar:', error);
+        app.showNotification('Erro ao buscar casamentos', 'error');
+    } finally {
+        app.hideLoading();
+    }
+});
         });
 
         // === NOVA PARTE: Botão de Buscar no menu ===
