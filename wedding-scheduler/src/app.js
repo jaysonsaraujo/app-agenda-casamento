@@ -58,6 +58,11 @@ class WeddingSchedulerApp {
             this.showSection('calendar');
         });
 
+        // === NOVA PARTE: Botão de Buscar no menu ===
+document.getElementById('btn-search').addEventListener('click', () => {
+    this.showSection('search');
+});
+
         document.getElementById('btn-config').addEventListener('click', () => {
             window.location.href = '/config.html';
         });
