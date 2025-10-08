@@ -1359,3 +1359,17 @@ input.error, select.error, textarea.error {
 #modal-confirm-delete .modal-footer button {
   height: 48px;
 }
+#modal-confirm-delete .modal-content {
+  animation: modalSlideIn 0.3s ease forwards;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
