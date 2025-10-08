@@ -18,48 +18,7 @@ class WeddingSchedulerApp {
 
             await this.loadConfig();
             window.calendar.init();
-
-    async init() {
-        try {
-            console.log('🚀 Inicializando aplicação...');
-            
-            const connected = await window.checkSupabaseConnection();
-            if (!connected) {
-                this.showNotification('Erro ao conectar com o banco de dados', 'error');
-                return;
-            }
-
-            await this.loadConfig();
-            window.calendar.init();
-            
-            // ADICIONAR ESTA LINHA
-            window.searchManager.init();
-            
             this.setupEventListeners();
-            await this.loadInitialData();
-            
-            console.log('✅ Aplicação iniciada com sucesso');
-        } catch (error) {
-            console.error('❌ Erro ao inicializar:', error);
-            this.showNotification('Erro ao inicializar aplicação: ' + error.message, 'error');
-        }
-    }
-            
-            this.setupEventListeners();
-            setupEventListeners() {
-        // Navegação
-        document.getElementById('btn-calendar').addEventListener('click', () => {
-            this.showSection('calendar');
-        });
-
-        // ADICIONAR ESTA NOVA SEÇÃO
-        document.getElementById('btn-search').addEventListener('click', () => {
-            this.showSection('search');
-        });
-
-        document.getElementById('btn-config').addEventListener('click', () => {
-            window.location.href = '/config.html';
-        });
             await this.loadInitialData();
             
             console.log('✅ Aplicação iniciada com sucesso');
@@ -550,5 +509,3 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, iniciando app...');
     window.app.init();
 });
-
-
