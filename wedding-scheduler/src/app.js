@@ -52,7 +52,23 @@ class WeddingSchedulerApp {
             console.error('Erro ao carregar dados iniciais:', error);
         }
     }
+getStatusColor(status) {
+    switch (status) {
+        case 'AGENDADO': return '#007AFF';
+        case 'REALIZADO': return '#28a745';
+        case 'CANCELADO': return '#dc3545';
+        default: return '#6c757d';
+    }
+}
 
+getStatusLabel(status) {
+    switch (status) {
+        case 'AGENDADO': return '📅 Agendado';
+        case 'REALIZADO': return '✅ Realizado';
+        case 'CANCELADO': return '❌ Cancelado';
+        default: return status;
+    }
+}
     setupEventListeners() {
         document.getElementById('btn-calendar').addEventListener('click', () => {
             this.showSection('calendar');
