@@ -99,6 +99,55 @@ class WeddingSchedulerApp {
         window.validator.setupRealtimeValidation('wedding-form');
         window.validator.setupRealtimeValidation('form-add-location');
         window.validator.setupRealtimeValidation('form-add-celebrant');
+        // === NOVA PARTE: Exportar Excel com feedback ===
+document.getElementById('btn-export-excel').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-export-excel');
+    const originalText = btn.innerHTML;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '📊 Exportando...';
+        this.showLoading('Exportando para Excel...');
+        
+        // === FUNÇÃO DE EXPORTAR EXCEL (mock ou real) ===
+        // Se você tem uma função real, substitua esta:
+        await this.exportExcel(); // <-- vamos criar esta função logo abaixo
+        // Ou: await window.db.exportToExcel(); (se já existir)
+        
+        this.showNotification('✅ Exportado para Excel com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao exportar Excel:', error);
+        this.showNotification('Erro ao exportar Excel', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        this.hideLoading();
+    }
+});
+
+// === NOVA PARTE: Exportar PDF com feedback ===
+document.getElementById('btn-export-pdf').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-export-pdf');
+    const originalText = btn.innerHTML;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '📄 Exportando...';
+        this.showLoading('Exportando para PDF...');
+        
+        // === FUNÇÃO DE EXPORTAR PDF (mock ou real) ===
+        await this.exportPDF(); // <-- vamos criar esta função logo abaixo
+        
+        this.showNotification('✅ Exportado para PDF com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao exportar PDF:', error);
+        this.showNotification('Erro ao exportar PDF', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        this.hideLoading();
+    }
+});
     }
 
     showSection(section) {
