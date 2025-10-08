@@ -1373,3 +1373,36 @@ input.error, select.error, textarea.error {
     transform: translateY(0) scale(1);
   }
 }
+/* Indicadores de filtros ativos */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #007AFF;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.active-filter .remove {
+  cursor: pointer;
+  font-weight: bold;
+  opacity: 0.8;
+}
+
+.active-filter .remove:hover {
+  opacity: 1;
+}
