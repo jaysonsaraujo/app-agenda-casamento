@@ -515,7 +515,23 @@
 <script src="/src/calendar.js"></script>
 <script src="/src/app.js"></script>
 <!-- ======================================= -->
+
+        <script>
+  (function () {
+    console.log('[check] window.supabase:', window.supabase);
+    console.log('[check] window.supabaseClient:', window.supabaseClient);
+    if (!window.supabaseClient) {
+      console.error('Supabase client AUSENTE. Verifique se /config/supabase.js foi carregado e a ordem dos scripts.');
+    } else if (typeof window.supabaseClient.from !== 'function') {
+      console.error('Supabase client inválido (sem .from). Revise /config/supabase.js.');
+    } else {
+      console.info('Supabase client OK.');
+    }
+  })();
+</script>
+
         
 </body>
 </html>
+
 
