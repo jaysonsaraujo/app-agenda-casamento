@@ -14,7 +14,6 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9s
 /** ============================================== */
 
 (function () {
-  // Carrega um script externo e resolve quando terminar
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       try {
@@ -28,26 +27,18 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9s
         const s = document.createElement("script");
         s.async = true;
         s.src = src;
-        s.onload = () => {
-          s.dataset.loaded = "1";
-          resolve();
-        };
+        s.onload = () => { s.dataset.loaded = "1"; resolve(); };
         s.onerror = () => reject(new Error("Falha ao carregar: " + src));
         document.head.appendChild(s);
-      } catch (e) {
-        reject(e);
-      }
+      } catch (e) { reject(e); }
     });
   }
 
-  // Garante que a lib UMD esteja disponível (window.supabase ou window.Supabase)
   async function ensureSupabaseUMD() {
     if ((window.supabase && typeof window.supabase.createClient === "function") ||
         (window.Supabase && typeof window.Supabase.createClient === "function")) {
       return;
     }
-
-    // Tenta jsDelivr primeiro, depois unpkg
     const cdnCandidates = [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js",
       "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"
@@ -60,20 +51,15 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9s
             (window.Supabase && typeof window.Supabase.createClient === "function")) {
           return;
         }
-      } catch (e) {
-        lastErr = e;
-      }
+      } catch (e) { lastErr = e; }
     }
     throw (lastErr || new Error("Não foi possível carregar a lib UMD do Supabase."));
   }
 
-  // Cria (ou reaproveita) o cliente global com as constantes acima
   async function initSupabase() {
     try {
       await ensureSupabaseUMD();
-      if (window.supabaseClient) {
-        return true;
-      }
+      if (window.supabaseClient) return true;
 
       const createClient =
         (window.supabase && window.supabase.createClient) ||
@@ -82,11 +68,9 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9s
       if (typeof createClient !== "function") {
         throw new Error("createClient não encontrado no UMD do Supabase.");
       }
-
       if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
         throw new Error("SUPABASE_URL/SUPABASE_ANON_KEY não definidos.");
       }
-
       window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       return true;
     } catch (err) {
@@ -95,30 +79,21 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9s
     }
   }
 
-  // Faz um check rápido na conexão (consulta leve)
   async function checkSupabaseConnection() {
     try {
       if (!window.supabaseClient) {
         const ok = await initSupabase();
         if (!ok) return false;
       }
-      // Tabela leve/simples para ping (ajuste se quiser)
       const { error } = await window.supabaseClient
         .from("system_config")
         .select("config_key")
         .limit(1);
-      if (error) {
-        console.error("Ping Supabase falhou:", error);
-        return false;
-      }
+      if (error) { console.error("Ping Supabase falhou:", error); return false; }
       return true;
-    } catch (e) {
-      console.error("checkSupabaseConnection() erro:", e);
-      return false;
-    }
+    } catch (e) { console.error("checkSupabaseConnection() erro:", e); return false; }
   }
 
-  // Expõe no escopo global
   window.initSupabase = initSupabase;
   window.checkSupabaseConnection = checkSupabaseConnection;
 })();
