@@ -1,40 +1,577 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <title>Sistema de Agendamento de Casamentos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:#f7f8fa; margin:0}
-    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #e5e7eb;background:#fff}
-    .nav{display:flex;gap:8px}
-    .btn{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer}
-    .link{background:#f3f4f6;color:#111}
-    main{max-width:1100px;margin:24px auto;padding:0 16px}
-    #calendarRoot{height:520px;border:1px dashed #cbd5e1;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:#64748b}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Agendamento de Casamentos</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    
+    <script>
+        console.log('🔵 HTML carregado');
+    </script>
 </head>
 <body>
-  <header>
-    <div style="font-weight:700">Sistema de Agendamento de Casamentos</div>
-    <div class="nav">
-      <button class="btn">Calendário</button>
-      <a href="/config.html"><button class="btn link">Configurações</button></a>
+    <script>console.log('🔵 Body iniciado');</script>
+    
+    <!-- Header -->
+      <header class="main-header">
+        <div class="container">
+            <h1 id="site-title">Sistema de Agendamento de Casamentos</h1>
+            <nav class="main-nav">
+                <button class="nav-btn active" id="btn-calendar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Calendário
+                </button>
+                <button class="nav-btn" id="btn-search">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    Buscar
+                </button>
+                <button class="nav-btn" id="btn-config">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
+                    </svg>
+                    Configurações
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+    <main class="main-content">
+        <!-- Seção de Busca e Filtros -->
+        <section id="search-section" class="content-section">
+            <div class="search-container">
+                <!-- Header de Busca -->
+                <div class="search-header">
+                    <h2>🔍 Busca e Filtros</h2>
+                    <button class="btn-secondary" id="btn-toggle-filters">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span id="filter-toggle-text">Mostrar Filtros</span>
+                    </button>
+                </div>
+
+                <!-- Painel de Filtros -->
+                <div id="filters-panel" class="filters-panel" style="display: none;">
+                    <div class="filters-grid">
+                        <!-- Busca por Nome -->
+                        <div class="filter-group">
+                            <label for="search-name">Nome dos Noivos</label>
+                            <input type="text" id="search-name" placeholder="Digite o nome..." class="uppercase-input">
+                        </div>
+
+                        <!-- Período -->
+                        <div class="filter-group">
+                            <label for="search-date-start">Data Inicial</label>
+                            <input type="date" id="search-date-start">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="search-date-end">Data Final</label>
+                            <input type="date" id="search-date-end">
+                        </div>
+
+                        <!-- Local -->
+                        <div class="filter-group">
+                            <label for="search-location">Local</label>
+                            <select id="search-location">
+                                <option value="">Todos os locais</option>
+                            </select>
+                        </div>
+
+                        <!-- Celebrante -->
+                        <div class="filter-group">
+                            <label for="search-celebrant">Celebrante</label>
+                            <select id="search-celebrant">
+                                <option value="">Todos os celebrantes</option>
+                            </select>
+                        </div>
+
+                        <!-- Tipo -->
+                        <div class="filter-group">
+                            <label for="search-type">Tipo</label>
+                            <select id="search-type">
+                                <option value="">Todos os tipos</option>
+                                <option value="false">Individual</option>
+                                <option value="true">Comunitário</option>
+                            </select>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="filter-group">
+                            <label for="search-status">Status</label>
+                            <select id="search-status">
+                                <option value="">Todos os status</option>
+                                <option value="AGENDADO">Agendado</option>
+                                <option value="REALIZADO">Realizado</option>
+                                <option value="CANCELADO">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Ações dos Filtros -->
+                    <div class="filters-actions">
+                        <button class="btn-secondary" id="btn-clear-filters">
+                            🗑️ Limpar Filtros
+                        </button>
+                        <button class="btn-primary" id="btn-apply-filters">
+                            🔍 Buscar
+                        </button>
+                    </div>
+
+                    <!-- Indicadores de Filtros Ativos -->
+                    <div id="active-filters" class="active-filters"></div>
+                </div>
+
+                <!-- Controles de Resultados -->
+                <div class="results-controls">
+                    <div class="results-info">
+                        <span id="results-count">0 resultados encontrados</span>
+                    </div>
+                    <div class="results-actions">
+                        <label for="results-per-page">Mostrar:</label>
+                        <select id="results-per-page">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <button class="btn-secondary" id="btn-export-excel">
+                            📊 Exportar Excel
+                        </button>
+                        <button class="btn-secondary" id="btn-export-pdf">
+                            📄 Exportar PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista de Resultados -->
+                <div id="search-results" class="search-results">
+                    <div class="results-empty">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.3;">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <p>Use os filtros acima para buscar casamentos</p>
+                    </div>
+                </div>
+
+                <!-- Paginação -->
+                <div id="pagination" class="pagination" style="display: none;"></div>
+            </div>
+        </section>
+
+        <!-- Seção do Calendário (já existente) -->
+        <section id="calendar-section" class="content-section active">
+        
+        <section id="calendar-section" class="content-section active">
+            <div class="calendar-controls">
+                <button class="btn-year" id="btn-prev-year">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <h2 id="current-year">2024</h2>
+                <button class="btn-year" id="btn-next-year">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="calendar-container" class="calendar-grid">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p>Carregando calendário...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Wedding Type -->
+    <div id="modal-wedding-type" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Tipo de Casamento</h3>
+            <p>Selecione o tipo de casamento a ser agendado:</p>
+            <div class="wedding-type-buttons">
+                <button class="btn-wedding-type" data-type="individual">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Casamento Individual</span>
+                    <small>Cerimônia exclusiva</small>
+                </button>
+                <button class="btn-wedding-type" data-type="community">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Casamento Comunitário</span>
+                    <small>Cerimônia coletiva</small>
+                </button>
+            </div>
+            <button class="btn-cancel" onclick="closeModal('modal-wedding-type')">Cancelar</button>
+        </div>
     </div>
-  </header>
 
-  <main>
-    <div id="calendarRoot">[ Seu calendário aqui ]</div>
-  </main>
+    <!-- Modal: Wedding Form (versão compacta para teste) -->
+    <div id="modal-wedding-form" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Cadastro de Casamento</h3>
+                <button class="btn-close" onclick="closeModal('modal-wedding-form')">&times;</button>
+            </div>
+            
+            <form id="wedding-form" class="wedding-form">
+                <input type="hidden" id="wedding-id">
+                <input type="hidden" id="is-community">
+                
+                <section class="form-section">
+                    <h4>Informações Básicas</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ID</label>
+                            <input type="text" id="display-wedding-id" readonly class="readonly-field">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Agendamento</label>
+                            <input type="text" id="display-schedule-date" readonly class="readonly-field">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <input type="text" id="display-wedding-type" readonly class="readonly-field">
+                        </div>
+                    </div>
+                </section>
 
-  <!-- ORDEM ÚNICA (sem duplicatas) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="/config/supabase.js?v=1" defer></script>
-  <script src="/src/database.js?v=1" defer></script>
+                <section class="form-section">
+                    <h4>Entrevista</h4>
+                    <div class="form-group">
+                        <label for="interview-date">Data da Entrevista <span class="required">*</span></label>
+                        <input type="datetime-local" id="interview-date" required>
+                    </div>
+                </section>
 
-  <!-- Se você tem seus próprios scripts de calendário/app, deixe-os aqui.
-       Caso contrário, pode remover as duas linhas abaixo. -->
-  <script src="/src/calendar.js?v=1" defer></script>
-  <script src="/src/app.js?v=1" defer></script>
+                <section class="form-section">
+                    <h4>Noivos</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bride-name">Nome da Noiva <span class="required">*</span></label>
+                            <input type="text" id="bride-name" required class="uppercase-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="bride-whatsapp">WhatsApp <span class="required">*</span></label>
+                            <input type="tel" id="bride-whatsapp" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="groom-name">Nome do Noivo <span class="required">*</span></label>
+                            <input type="text" id="groom-name" required class="uppercase-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="groom-whatsapp">WhatsApp <span class="required">*</span></label>
+                            <input type="tel" id="groom-whatsapp" required>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Casamento</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="wedding-date">Data <span class="required">*</span></label>
+                            <input type="date" id="wedding-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="wedding-time">Horário <span class="required">*</span></label>
+                            <input type="time" id="wedding-time" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">Local <span class="required">*</span></label>
+                            <div class="input-with-action">
+                                <select id="location" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <button type="button" class="btn-add-new" id="btn-add-location">+</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="celebrant">Celebrante <span class="required">*</span></label>
+                            <div class="input-with-action">
+                                <select id="celebrant" required>
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <button type="button" class="btn-add-new" id="btn-add-celebrant">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Transferência</h4>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="transfer_type" value="none" checked>
+                            <span>Sem transferência</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="transfer_type" value="ENTRADA_PAROQUIA">
+                            <span>Vem de outra paróquia</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="transfer_type" value="SAIDA_PAROQUIA">
+                            <span>Vai para outra paróquia</span>
+                        </label>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="civil-effect">
+                            <span>Com efeito civil</span>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Proclames</h4>
+                    <div class="proclamation-table">
+                        <div class="proclamation-header">
+                            <div>1º Domingo</div>
+                            <div>2º Domingo</div>
+                            <div>3º Domingo</div>
+                            <div>Casamento</div>
+                        </div>
+                        <div class="proclamation-dates">
+                            <div id="first-sunday">--/--/----</div>
+                            <div id="second-sunday">--/--/----</div>
+                            <div id="third-sunday">--/--/----</div>
+                            <div id="wedding-date-display">--/--/----</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h4>Observações</h4>
+                    <div class="form-group">
+                        <label for="observations">Observações</label>
+                        <textarea id="observations" rows="3" class="uppercase-input"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="system-message">Mensagem do Sistema</label>
+                        <textarea id="system-message" rows="2" class="uppercase-input"></textarea>
+                    </div>
+                </section>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-wedding-form')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Day Events -->
+    <div id="modal-day-events" class="modal">
+        <div class="modal-content modal-medium">
+            <div class="modal-header">
+                <h3 id="day-events-title">Eventos do Dia</h3>
+                <button class="btn-close" onclick="closeModal('modal-day-events')">&times;</button>
+            </div>
+            <div id="day-events-list" class="events-list"></div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-day-events')">Fechar</button>
+                <button class="btn-primary" id="btn-new-event-from-list">Novo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Location -->
+    <div id="modal-add-location" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Novo Local</h3>
+            <form id="form-add-location">
+                <div class="form-group">
+                    <label for="new-location-name">Nome <span class="required">*</span></label>
+                    <input type="text" id="new-location-name" required class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="new-location-address">Endereço</label>
+                    <input type="text" id="new-location-address" class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="new-location-capacity">Capacidade</label>
+                    <input type="number" id="new-location-capacity" min="0">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-add-location')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Celebrant -->
+    <div id="modal-add-celebrant" class="modal">
+        <div class="modal-content modal-small">
+            <h3>Novo Celebrante</h3>
+            <form id="form-add-celebrant">
+                <div class="form-group">
+                    <label for="new-celebrant-name">Nome <span class="required">*</span></label>
+                    <input type="text" id="new-celebrant-name" required class="uppercase-input">
+                </div>
+                <div class="form-group">
+                    <label for="new-celebrant-title">Título <span class="required">*</span></label>
+                    <select id="new-celebrant-title" required>
+                        <option value="">Selecione...</option>
+                        <option value="PADRE">Padre</option>
+                        <option value="DIÁCONO">Diácono</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-celebrant-phone">Telefone</label>
+                    <input type="tel" id="new-celebrant-phone">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modal-add-celebrant')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="calendar-tooltip" class="calendar-tooltip">
+        <div class="tooltip-content"></div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script>console.log('🔵 Carregando Supabase...');</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>console.log('🔵 Carregando config/supabase.js');</script>
+    <script src="/config/supabase.js"></script>
+    
+    <script>console.log('🔵 Carregando src/database.js');</script>
+    <script src="/src/database.js"></script>
+    
+    <script>console.log('🔵 Carregando src/validation.js');</script>
+    <script src="/src/validation.js"></script>
+    
+    <script>console.log('🔵 Carregando src/calendar.js');</script>
+    <script src="/src/calendar.js"></script>
+    
+    <script>console.log('🔵 Carregando src/app.js');</script>
+    <script src="/src/app.js"></script>
+    
+    <script>
+        console.log('🔵 Todos os scripts carregados');
+        console.log('window.supabaseClient:', typeof window.supabaseClient);
+        console.log('window.db:', typeof window.db);
+        console.log('window.validator:', typeof window.validator);
+        console.log('window.calendar:', typeof window.calendar);
+        console.log('window.app:', typeof window.app);
+</script>
+
+<!-- ===== ORDEM CORRETA (NÃO ALTERAR) ===== -->
+<!-- 1) SDK do Supabase (precisa vir antes de tudo que usa Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2) Cria window.supabaseClient -->
+<script src="/config/supabase.js"></script>
+
+<!-- 3) Camada de banco que usa window.supabaseClient -->
+<script src="/src/database.js"></script>
+
+<!-- 4) Scripts desta página -->
+<script src="/src/calendar.js"></script>
+<script src="/src/app.js"></script>
+<!-- ======================================= -->
+
+        <script>
+  (function () {
+    console.log('[check] window.supabase:', window.supabase);
+    console.log('[check] window.supabaseClient:', window.supabaseClient);
+    if (!window.supabaseClient) {
+      console.error('Supabase client AUSENTE. Verifique se /config/supabase.js foi carregado e a ordem dos scripts.');
+    } else if (typeof window.supabaseClient.from !== 'function') {
+      console.error('Supabase client inválido (sem .from). Revise /config/supabase.js.');
+    } else {
+      console.info('Supabase client OK.');
+    }
+  })();
+</script>
+
+        <!-- ===== Supabase: ordem correta + fallback ===== -->
+<!-- 1) SDK do Supabase (obrigatório vir antes de tudo que usa Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2) Tenta criar window.supabaseClient via /config/supabase.js -->
+<script src="/config/supabase.js" onerror="window.__sbCfgFailed=true"></script>
+
+<!-- 3) Fallback: se /config/supabase.js não carregou, cria o cliente aqui -->
+<script>
+(function () {
+  try {
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      console.error('[index] SDK do Supabase não carregou.');
+      return;
+    }
+    if (!window.supabaseClient) {
+      console.warn('[index] /config/supabase.js não carregou (ou não criou o cliente). Usando fallback inline.');
+      const { createClient } = window.supabase;
+      window.supabaseClient = createClient(
+        'https://aplicativos-db-phm2-supabase.xqzrhl.easypanel.host',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE',
+        { auth: { persistSession: false }, global: { headers: { 'x-client-info': 'casamentos-app/1.0' } } }
+      );
+    }
+  } catch (e) {
+    console.error('[index] Falha ao inicializar Supabase (fallback):', e);
+  }
+})();
+</script>
+
+<!-- 4) Camada de acesso ao banco (usa window.supabaseClient) -->
+<script src="/src/database.js"></script>
+
+<!-- 5) Scripts desta página (ajuste os nomes se forem outros) -->
+<script src="/src/calendar.js"></script>
+<script src="/src/app.js"></script>
+<!-- =============================================== -->
+
+        
 </body>
 </html>
+
+
+
+
