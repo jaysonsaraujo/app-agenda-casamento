@@ -155,4 +155,3 @@ window.checkSupabaseConnection = checkConnection;
   window.checkSupabaseConnection = checkSupabaseConnection;
 })();
 </script>
-
