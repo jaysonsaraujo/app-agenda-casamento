@@ -500,5 +500,22 @@
         console.log('window.calendar:', typeof window.calendar);
         console.log('window.app:', typeof window.app);
 </script>
+
+<!-- ===== ORDEM CORRETA (NÃO ALTERAR) ===== -->
+<!-- 1) SDK do Supabase (precisa vir antes de tudo que usa Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2) Cria window.supabaseClient -->
+<script src="/config/supabase.js"></script>
+
+<!-- 3) Camada de banco que usa window.supabaseClient -->
+<script src="/src/database.js"></script>
+
+<!-- 4) Scripts desta página -->
+<script src="/src/calendar.js"></script>
+<script src="/src/app.js"></script>
+<!-- ======================================= -->
+        
 </body>
 </html>
+
