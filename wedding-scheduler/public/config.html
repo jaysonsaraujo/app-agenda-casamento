@@ -1,266 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Configurações - Sistema de Agendamento</title>
-
-  <link rel="stylesheet" href="/styles.css" />
-
-  <!-- Garantir que nada fique oculto por CSS global -->
+  <meta charset="utf-8" />
+  <title>Configurações do Sistema</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    html, body { background:#fff; }
-    main.main-content, .content-section { display:block !important; visibility:visible !important; opacity:1 !important; }
-    .form-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:16px; }
-    .form-group { margin:10px 0; }
-    .form-group label { display:block; margin-bottom:6px; font-weight:600; }
-    .form-group input, .form-group select { width:100%; padding:8px 10px; }
-    .btn-primary, .btn-secondary { cursor:pointer; padding:8px 14px; border-radius:6px; border:0; }
-    .btn-primary { background:#2563eb; color:#fff; }
-    .btn-secondary { background:#e5e7eb; color:#111827; }
-    .table { width:100%; border-collapse:collapse; }
-    .table th, .table td { border-bottom:1px solid #e5e7eb; padding:10px; text-align:left; }
-    .table-responsive { width:100%; overflow:auto; }
-    .cards-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
-    .card { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:14px; }
-    .stat-value { font-size:22px; font-weight:700; }
-    .stat-label { color:#475569; font-size:13px; }
-
-    #boot-status { margin:16px 0; padding:12px 16px; border-radius:8px; background:#F1F5F9; color:#0f172a; font-size:14px; }
-    #boot-status.error { background:#FEF2F2; color:#991B1B; }
-    #boot-status.ok { background:#ECFDF5; color:#065F46; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:#fafbfc; margin:0; color:#111}
+    header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #e5e7eb;background:#fff}
+    main{max-width:1100px;margin:24px auto;padding:0 16px}
+    h1{font-size:22px;margin:0}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:16px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid #eee;padding:8px;text-align:left;font-size:14px}
+    input[type=number]{width:100%;padding:8px;border:1px solid #dadde1;border-radius:8px}
+    button{background:#2563eb;border:none;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer}
+    .toast{display:none;position:fixed;right:16px;top:16px;padding:10px 14px;border-radius:8px;background:#111;color:#fff;z-index:10}
+    .toast.success{background:#16a34a}.toast.error{background:#dc2626}.toast.info{background:#111}
+    .muted{color:#6b7280;font-size:12px}
   </style>
 </head>
 <body>
-  <header class="main-header">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
-      <h1 style="margin:10px 0;">Configurações do Sistema</h1>
-      <nav class="main-nav">
-        <a class="btn-secondary" href="/index.html">Voltar ao Calendário</a>
-      </nav>
-    </div>
+  <header>
+    <h1>Configurações do Sistema</h1>
+    <a href="/index.html"><button type="button">Voltar ao Calendário</button></a>
   </header>
 
-  <main class="main-content container" style="max-width:1100px; margin:0 auto;">
-    <div id="boot-status">Inicializando configurações…</div>
+  <main>
+    <div id="toast" class="toast"></div>
 
-    <!-- Estatísticas -->
-    <section class="content-section">
-      <h2>📊 Estatísticas do Sistema</h2>
-      <div class="cards-grid">
-        <div class="card">
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-label">Total de Casamentos</div>
+    <div class="card">
+      <div class="grid">
+        <div>
+          <div class="muted">Total de Casamentos</div>
+          <div style="font-size:28px;font-weight:700" id="statTotal">0</div>
         </div>
-        <div class="card">
-          <div class="stat-value" id="stat-month">0</div>
-          <div class="stat-label">Este Mês</div>
+        <div>
+          <div class="muted">Este Mês</div>
+          <div style="font-size:28px;font-weight:700" id="statMonth">0</div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Configurações gerais -->
-    <section class="content-section">
-      <h2>⚙️ Configurações Gerais</h2>
-      <div class="form-group">
-        <label for="site-name">Nome do Sistema</label>
-        <input type="text" id="site-name" placeholder="Nome que aparece no topo do sistema" />
-      </div>
-      <button class="btn-primary" id="btn-save-general">Salvar Configurações</button>
-    </section>
-
-    <!-- Limites -->
-    <section class="content-section">
-      <h2>🗓️ Limites de Agendamento</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="max-weddings-per-day">Máximo de Casamentos por Dia</label>
-          <input type="number" id="max-weddings-per-day" min="1" value="4" />
+    <div class="card">
+      <h2 style="margin:0 0 12px">Limites de Agendamento</h2>
+      <div class="grid">
+        <div>
+          <label class="muted">Máximo de Casamentos por Dia</label>
+          <input id="maxPerDay" type="number" min="0" step="1" />
         </div>
-        <div class="form-group">
-          <label for="max-community-per-day">Máximo de Comunitários por Dia</label>
-          <input type="number" id="max-community-per-day" min="0" value="2" />
+        <div>
+          <label class="muted">Máximo de Comunitários por Dia</label>
+          <input id="maxCommunityPerDay" type="number" min="0" step="1" />
         </div>
-        <div class="form-group">
-          <label for="max-couples-per-community">Máximo de Casais por Casamento Comunitário</label>
-          <input type="number" id="max-couples-per-community" min="1" value="20" />
+        <div>
+          <label class="muted">Máximo de Casais por Casamento Comunitário</label>
+          <input id="maxCouplesPerCommunity" type="number" min="0" step="1" />
         </div>
       </div>
-      <button class="btn-primary" id="btn-save-limits">Salvar Limites</button>
-    </section>
-
-    <!-- Lembretes -->
-    <section class="content-section">
-      <h2>⏰ Lembretes</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="reminder-interview-2d">2 dias antes (horas)</label>
-          <input type="number" id="reminder-interview-2d" min="1" value="48" />
-        </div>
-        <div class="form-group">
-          <label for="reminder-interview-1d">1 dia antes (horas)</label>
-          <input type="number" id="reminder-interview-1d" min="1" value="24" />
-        </div>
-        <div class="form-group">
-          <label for="reminder-interview-12h">12h antes (horas)</label>
-          <input type="number" id="reminder-interview-12h" min="1" value="12" />
-        </div>
+      <div style="margin-top:12px">
+        <button id="btnSaveLimits" type="button">Salvar Limites</button>
       </div>
-      <button class="btn-primary" id="btn-save-reminders">Salvar Lembretes</button>
-    </section>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Locais</h2>
+        <table>
+          <thead><tr><th>ID</th><th>Nome</th><th>Capacidade</th><th>Status</th></tr></thead>
+          <tbody id="locationsTbody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2 style="margin:0 0 12px">Celebrantes</h2>
+        <table>
+          <thead><tr><th>ID</th><th>Nome</th><th>Título</th><th>Status</th></tr></thead>
+          <tbody id="celebrantsTbody"></tbody>
+        </table>
+      </div>
+    </div>
   </main>
 
-  <!-- ORDEM IMPORTA (com versão para quebrar cache) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js?v=4"></script>
-  <script src="/config/supabase.js?v=4"></script>
-  <script src="/src/database.js?v=4"></script>
-
-  <!-- Boot **inline** (fica visível mesmo se algum .js externo falhar) -->
-  <script>
-    console.log("[config] boot start");
-    function setBootStatus(msg, cls) {
-      const el = document.getElementById('boot-status');
-      if (!el) return;
-      el.textContent = msg;
-      el.className = '';
-      el.id = 'boot-status';
-      if (cls) el.classList.add(cls);
-    }
-
-    async function loadConfigsIntoForm() {
-      const cfg = await window.db.getConfig();
-      const getCfg = (k, def) => {
-        const row = cfg.find(c => c.config_key === k);
-        return row ? row.config_value : def;
-      };
-      document.getElementById('site-name').value = getCfg('site_name', '');
-
-      document.getElementById('max-weddings-per-day').value = getCfg('max_weddings_per_day', 4);
-      document.getElementById('max-community-per-day').value = getCfg('max_community_weddings', 2);
-      document.getElementById('max-couples-per-community').value = getCfg('max_couples_per_community', 20);
-
-      document.getElementById('reminder-interview-2d').value = getCfg('reminder_interview_2d', 48);
-      document.getElementById('reminder-interview-1d').value = getCfg('reminder_interview_1d', 24);
-      document.getElementById('reminder-interview-12h').value = getCfg('reminder_interview_12h', 12);
-    }
-
-    async function saveGeneral() {
-      await window.db.updateConfig('site_name', document.getElementById('site-name').value);
-      setBootStatus('Configurações gerais salvas.', 'ok');
-    }
-    async function saveLimits() {
-      await window.db.updateConfig('max_weddings_per_day', document.getElementById('max-weddings-per-day').value);
-      await window.db.updateConfig('max_community_weddings', document.getElementById('max-community-per-day').value);
-      await window.db.updateConfig('max_couples_per_community', document.getElementById('max-couples-per-community').value);
-      setBootStatus('Limites salvos.', 'ok');
-    }
-    async function saveReminders() {
-      await window.db.updateConfig('reminder_interview_2d', document.getElementById('reminder-interview-2d').value);
-      await window.db.updateConfig('reminder_interview_1d', document.getElementById('reminder-interview-1d').value);
-      await window.db.updateConfig('reminder_interview_12h', document.getElementById('reminder-interview-12h').value);
-      setBootStatus('Lembretes salvos.', 'ok');
-    }
-
-    // Listeners
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('btn-save-general').addEventListener('click', () => {
-        saveGeneral().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), 'error'));
-      });
-      document.getElementById('btn-save-limits').addEventListener('click', () => {
-        saveLimits().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), 'error'));
-      });
-      document.getElementById('btn-save-reminders').addEventListener('click', () => {
-        saveReminders().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), 'error'));
-      });
-    });
-
-    (async () => {
-      try {
-        setBootStatus('Inicializando conexão…');
-        if (!window.initSupabase) {
-          setBootStatus('Script /config/supabase.js não carregou. Verifique a aba "Rede".', 'error');
-          console.error('initSupabase ausente');
-          return;
-        }
-        const okInit = await window.initSupabase();
-        if (!okInit) { setBootStatus('Erro ao inicializar o Supabase.', 'error'); return; }
-
-        const okPing = await window.checkSupabaseConnection();
-        if (!okPing) { setBootStatus('Não foi possível conectar ao banco.', 'error'); return; }
-
-        if (!window.db) {
-          setBootStatus('Script /src/database.js não carregou. Verifique a aba "Rede".', 'error');
-          console.error('window.db ausente');
-          return;
-        }
-
-        setBootStatus('Carregando configurações…');
-        await loadConfigsIntoForm();
-        setBootStatus('Configurações carregadas.', 'ok');
-        console.log("[config] carregado");
-      } catch (e) {
-        console.error(e);
-        setBootStatus('Falha ao carregar a página: ' + (e?.message || e), 'error');
-      }
-    })();
-  </script>
-
-<!-- ===== ORDEM CORRETA (NÃO ALTERAR) ===== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/config/supabase.js"></script>
-<script src="/src/database.js"></script>
-
-<!-- Ajuste o nome do script da sua página de configs se for diferente -->
-<script src="/src/config.js"></script>
-<!-- ======================================= -->
-
-  <script>
-  (function () {
-    console.log('[check] window.supabase:', window.supabase);
-    console.log('[check] window.supabaseClient:', window.supabaseClient);
-    if (!window.supabaseClient) {
-      console.error('Supabase client AUSENTE. Verifique se /config/supabase.js foi carregado e a ordem dos scripts.');
-    } else if (typeof window.supabaseClient.from !== 'function') {
-      console.error('Supabase client inválido (sem .from). Revise /config/supabase.js.');
-    } else {
-      console.info('Supabase client OK.');
-    }
-  })();
-</script>
-
-  <!-- ===== Supabase: ordem correta + fallback ===== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/config/supabase.js" onerror="window.__sbCfgFailed=true"></script>
-<script>
-(function () {
-  try {
-    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-      console.error('[config] SDK do Supabase não carregou.');
-      return;
-    }
-    if (!window.supabaseClient) {
-      console.warn('[config] /config/supabase.js não carregou (ou não criou o cliente). Usando fallback inline.');
-      const { createClient } = window.supabase;
-      window.supabaseClient = createClient(
-        'https://aplicativos-db-phm2-supabase.xqzrhl.easypanel.host',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE',
-        { auth: { persistSession: false }, global: { headers: { 'x-client-info': 'casamentos-app/1.0' } } }
-      );
-    }
-  } catch (e) {
-    console.error('[config] Falha ao inicializar Supabase (fallback):', e);
-  }
-})();
-</script>
-
-<!-- Camada de banco -->
-<script src="/src/database.js"></script>
-
-<!-- Script específico da página de configurações (ajuste o nome se for outro) -->
-<script src="/src/config.js"></script>
-<!-- =============================================== -->
-
-
-  
+  <!-- ORDEM ÚNICA (sem duplicatas) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="/config/supabase.js?v=1" defer></script>
+  <script src="/src/database.js?v=1" defer></script>
+  <script src="/src/config.js?v=1" defer></script>
 </body>
 </html>
