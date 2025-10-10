@@ -1,17 +1,20 @@
-<script>
 /**
- * Inicialização resiliente do Supabase no navegador.
- * - Garante que a lib UMD do @supabase/supabase-js@2 esteja carregada
- * - Cria window.supabaseClient
+ * Inicialização do Supabase no navegador com URL/ANON fixos.
+ * - Carrega a lib UMD do @supabase/supabase-js@2 se necessário
+ * - Cria window.supabaseClient usando as constantes abaixo
  * - Expõe window.initSupabase() e window.checkSupabaseConnection()
  *
- * Observação: este arquivo deve ser incluído DEPOIS do script UMD do supabase
- * (cdn.jsdelivr ou unpkg). Esta versão também tenta carregar dinamicamente se
- * não encontrar a lib por qualquer motivo.
+ * IMPORTANTE: Este arquivo é JavaScript puro (NÃO coloque <script> aqui).
+ * Na página, inclua na ordem: UMD do Supabase -> ESTE arquivo -> seus src/*.js
  */
 
+/** ====== SUAS CREDENCIAIS PÚBLICAS (ANON) ====== */
+const SUPABASE_URL = "https://aplicativos-db-phm2-supabase.xqzrhl.easypanel.host";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE";
+/** ============================================== */
+
 (function () {
-  // Carrega um script externamente e devolve uma Promise que resolve no 'load'
+  // Carrega um script externo e resolve quando terminar
   function loadScript(src) {
     return new Promise((resolve, reject) => {
       try {
@@ -64,28 +67,13 @@
     throw (lastErr || new Error("Não foi possível carregar a lib UMD do Supabase."));
   }
 
-  // Busca config do backend
-  async function fetchRuntimeConfig() {
-    const res = await fetch("/api/config", { headers: { "accept": "application/json" } });
-    if (!res.ok) {
-      throw new Error("Falha ao obter /api/config (" + res.status + ")");
-    }
-    const json = await res.json();
-    // Espera: { supabaseUrl: "...", supabaseKey: "..." }
-    if (!json || !json.supabaseUrl || !json.supabaseKey) {
-      throw new Error("Config inválida: supabaseUrl/supabaseKey ausentes.");
-    }
-    return json;
-  }
-
-  // Cria (ou reaproveita) o cliente global
+  // Cria (ou reaproveita) o cliente global com as constantes acima
   async function initSupabase() {
     try {
       await ensureSupabaseUMD();
       if (window.supabaseClient) {
         return true;
       }
-      const { supabaseUrl, supabaseKey } = await fetchRuntimeConfig();
 
       const createClient =
         (window.supabase && window.supabase.createClient) ||
@@ -95,7 +83,11 @@
         throw new Error("createClient não encontrado no UMD do Supabase.");
       }
 
-      window.supabaseClient = createClient(supabaseUrl, supabaseKey);
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        throw new Error("SUPABASE_URL/SUPABASE_ANON_KEY não definidos.");
+      }
+
+      window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       return true;
     } catch (err) {
       console.error("initSupabase() falhou:", err);
@@ -130,4 +122,3 @@
   window.initSupabase = initSupabase;
   window.checkSupabaseConnection = checkSupabaseConnection;
 })();
-</script>
