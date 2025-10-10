@@ -7,7 +7,7 @@ class ValidationManager {
     // ===== FORMATADORES =====
     formatPhone(value) {
         const numbers = value.replace(/\D/g, '');
-        if (numbers.length <= 11) {
+        if (numbers.length === 11) {
             return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
         }
         return value;
@@ -22,15 +22,6 @@ class ValidationManager {
         return `${day}/${month}/${year}`;
     }
 
-    formatDateTime(datetime) {
-        if (!datetime) return '';
-        const d = new Date(datetime);
-        const date = this.formatDate(d);
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        return `${date} às ${hours}:${minutes}`;
-    }
-
     toUpperCase(value) {
         return value ? value.toUpperCase() : '';
     }
@@ -41,12 +32,8 @@ class ValidationManager {
         return cleaned.length === 11 && cleaned[2] === '9';
     }
 
-    isValidDate(date) {
-        const d = new Date(date);
-        return d instanceof Date && !isNaN(d);
-    }
-
     isFutureDate(date) {
+        if (!date) return false;
         const d = new Date(date);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -57,12 +44,12 @@ class ValidationManager {
         return value === null || value === undefined || String(value).trim() === '';
     }
 
-    // ===== VALIDAÇÃO DE FORMULÁRIO =====
+    // ===== FORM PRINCIPAL =====
     validateWeddingForm(formData) {
         this.errors.clear();
 
-        // mapeie SEMPRE para IDs reais do DOM
-        if (!formData.interview_date) {
+        // IDs devem ser SEMPRE os do DOM (com hífen), não os nomes de propriedade (com underscore)
+        if (this.isEmpty(formData.interview_date)) {
             this.addError('interview-date', 'Data da entrevista é obrigatória');
         } else if (!this.isFutureDate(formData.interview_date)) {
             this.addError('interview-date', 'Data da entrevista deve ser futura');
@@ -88,7 +75,7 @@ class ValidationManager {
             this.addError('groom-whatsapp', 'WhatsApp inválido');
         }
 
-        if (!formData.wedding_date) {
+        if (this.isEmpty(formData.wedding_date)) {
             this.addError('wedding-date', 'Data do casamento é obrigatória');
         } else if (!this.isFutureDate(formData.wedding_date)) {
             this.addError('wedding-date', 'Data do casamento deve ser futura');
@@ -128,13 +115,9 @@ class ValidationManager {
         return this.errors.size === 0;
     }
 
-    // ===== GERENCIAMENTO DE ERROS =====
+    // ===== ERROS =====
     addError(fieldDomId, message) {
         this.errors.set(fieldDomId, message);
-    }
-
-    getError(fieldDomId) {
-        return this.errors.get(fieldDomId);
     }
 
     clearErrors() {
@@ -154,7 +137,7 @@ class ValidationManager {
                 input.classList.add('error');
 
                 const errorEl = document.createElement('small');
-                errorEl.className = 'error-message text-danger';
+                errorEl.className = 'error-message';
                 errorEl.textContent = message;
                 errorEl.style.color = '#ef4444';
                 errorEl.style.fontSize = '0.875rem';
@@ -192,7 +175,7 @@ class ValidationManager {
         });
     }
 
-    // ===== Conflitos de agenda (mapeia para IDs do DOM) =====
+    // ===== CONFLITOS (IDs do DOM) =====
     async validateWeddingConflicts(formData) {
         try {
             const conflicts = await window.db.checkWeddingConflicts(formData);
@@ -202,6 +185,9 @@ class ValidationManager {
                     switch (conflict.conflict_type) {
                         case 'LIMITE_COMUNITARIO':
                         case 'LIMITE_TOTAL':
+                            this.addError('wedding-date', conflict.message);
+                            break;
+                        case 'LIMITE_CASAIS_COMUNITARIO':
                             this.addError('wedding-date', conflict.message);
                             break;
                         case 'CONFLITO_LOCAL_HORARIO':
