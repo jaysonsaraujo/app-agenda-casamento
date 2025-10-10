@@ -188,12 +188,14 @@
     </div>
   </div>
 
-  <!-- Scripts do app -->
-  <script src="/config/supabase.js"></script>
-  <script src="/src/database.js"></script>
-  <script src="/src/validation.js"></script>
+  <!-- ====== BLOCO ÚNICO DE SCRIPTS (ORDEM CORRETA) ====== -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="/config/supabase.js" defer></script>
+  <script src="/src/database.js" defer></script>
+  <script src="/src/validation.js" defer></script>
 
-  <script>
+  <!-- Script da página: roda após DOM + libs carregadas -->
+  <script defer>
     // Utilidades de modal
     function openModal(id) {
       document.getElementById(id)?.classList.add('show');
@@ -202,6 +204,21 @@
     function closeModal(id) {
       document.getElementById(id)?.classList.remove('show');
       document.body.style.overflow = '';
+    }
+
+    // Fallback local para checar conexão (caso seu projeto não defina window.checkSupabaseConnection)
+    async function __localCheckSupabase() {
+      try {
+        if (window.db && typeof window.db.ping === 'function') {
+          await window.db.ping();
+          return true;
+        }
+        // fallback mínimo: apenas verifica se o cliente existe
+        return !!(window.supabaseClient && typeof window.supabaseClient.from === 'function');
+      } catch (e) {
+        console.error('Ping falhou:', e);
+        return false;
+      }
     }
 
     // Carregar configs do servidor
@@ -261,6 +278,7 @@
             `).join('')
           : '<tr><td colspan="5">Sem registros</td></tr>';
       } catch (e) {
+        console.error(e);
         tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar locais</td></tr>';
       }
     }
@@ -280,56 +298,65 @@
             `).join('')
           : '<tr><td colspan="5">Sem registros</td></tr>';
       } catch (e) {
+        console.error(e);
         tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar celebrantes</td></tr>';
       }
     }
 
     // Modais "Adicionar"
-    document.getElementById('btn-open-add-location').addEventListener('click', () => openModal('modal-add-location'));
-    document.getElementById('btn-open-add-celebrant').addEventListener('click', () => openModal('modal-add-celebrant'));
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('btn-open-add-location').addEventListener('click', () => openModal('modal-add-location'));
+      document.getElementById('btn-open-add-celebrant').addEventListener('click', () => openModal('modal-add-celebrant'));
 
-    document.getElementById('form-add-location').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: document.getElementById('new-location-name').value,
-        address: document.getElementById('new-location-address').value,
-        capacity: parseInt(document.getElementById('new-location-capacity').value || '0', 10) || null,
-        is_active: true
-      };
-      try {
-        await window.db.addLocation(payload);
-        closeModal('modal-add-location');
-        await loadLocations();
-      } catch (err) {
-        alert('Erro ao adicionar local');
-      }
+      document.getElementById('form-add-location').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('new-location-name').value,
+          address: document.getElementById('new-location-address').value,
+          capacity: parseInt(document.getElementById('new-location-capacity').value || '0', 10) || null,
+          is_active: true
+        };
+        try {
+          await window.db.addLocation(payload);
+          closeModal('modal-add-location');
+          await loadLocations();
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao adicionar local');
+        }
+      });
+
+      document.getElementById('form-add-celebrant').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('new-celebrant-name').value,
+          title: document.getElementById('new-celebrant-title').value,
+          phone: document.getElementById('new-celebrant-phone').value || null,
+          is_active: true
+        };
+        try {
+          await window.db.addCelebrant(payload);
+          closeModal('modal-add-celebrant');
+          await loadCelebrants();
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao adicionar celebrante');
+        }
+      });
+
+      // Botões salvar
+      document.getElementById('btn-save-general').addEventListener('click', saveGeneral);
+      document.getElementById('btn-save-limits').addEventListener('click', saveLimits);
+      document.getElementById('btn-save-reminders').addEventListener('click', saveReminders);
     });
 
-    document.getElementById('form-add-celebrant').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: document.getElementById('new-celebrant-name').value,
-        title: document.getElementById('new-celebrant-title').value,
-        phone: document.getElementById('new-celebrant-phone').value || null,
-        is_active: true
-      };
-      try {
-        await window.db.addCelebrant(payload);
-        closeModal('modal-add-celebrant');
-        await loadCelebrants();
-      } catch (err) {
-        alert('Erro ao adicionar celebrante');
-      }
-    });
+    // Boot da página de configurações
+    document.addEventListener('DOMContentLoaded', async function () {
+      // Usa o helper global se existir; senão cai no fallback local
+      const ok = typeof window.checkSupabaseConnection === 'function'
+        ? await window.checkSupabaseConnection()
+        : await __localCheckSupabase();
 
-    // Botões salvar
-    document.getElementById('btn-save-general').addEventListener('click', saveGeneral);
-    document.getElementById('btn-save-limits').addEventListener('click', saveLimits);
-    document.getElementById('btn-save-reminders').addEventListener('click', saveReminders);
-
-    // Boot
-    (async () => {
-      const ok = await window.checkSupabaseConnection();
       if (!ok) {
         alert('Erro ao conectar ao banco. Verifique a configuração.');
         return;
@@ -337,7 +364,8 @@
       await loadConfigs();
       await loadLocations();
       await loadCelebrants();
-    })();
+    });
   </script>
+  <!-- ====== FIM DO BLOCO DE SCRIPTS ====== -->
 </body>
 </html>
