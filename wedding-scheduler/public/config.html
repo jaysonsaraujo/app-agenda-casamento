@@ -4,167 +4,64 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Configurações - Sistema de Agendamento</title>
+
+  <!-- Seu CSS global -->
   <link rel="stylesheet" href="/styles.css" />
+
+  <!-- Correções de visibilidade: GARANTE que a página não fique oculta por regras globais -->
   <style>
+    /* Força exibição das seções desta página, independente do styles.css global */
+    body, html { background:#fff; }
+    main.main-content { display:block !important; visibility:visible !important; opacity:1 !important; }
+    .content-section { display:block !important; visibility:visible !important; opacity:1 !important; }
+    /* Tabelas e grids básicas */
+    .form-grid {
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:16px;
+    }
+    .form-group { margin: 10px 0; }
+    .form-group label { display:block; margin-bottom:6px; font-weight:600; }
+    .form-group input, .form-group select { width:100%; padding:8px 10px; }
+    .btn-primary, .btn-secondary { cursor:pointer; padding:8px 14px; border-radius:6px; border:0; }
+    .btn-primary { background:#2563eb; color:#fff; }
+    .btn-secondary { background:#e5e7eb; color:#111827; }
+    .table { width:100%; border-collapse:collapse; }
+    .table th, .table td { border-bottom:1px solid #e5e7eb; padding:10px; text-align:left; }
+    .table-responsive { width:100%; overflow:auto; }
+    .cards-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
+    .card { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:14px; }
+    .stat-value { font-size:22px; font-weight:700; }
+    .stat-label { color:#475569; font-size:13px; }
+
+    /* Banner de status do boot */
     #boot-status {
       margin: 16px 0; padding: 12px 16px; border-radius: 8px;
       background: #F1F5F9; color: #0f172a; font-size: 14px;
     }
     #boot-status.error { background:#FEF2F2; color:#991B1B; }
+    #boot-status.ok { background:#ECFDF5; color:#065F46; }
   </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="container">
-      <h1>Configurações do Sistema</h1>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+      <h1 style="margin:10px 0;">Configurações do Sistema</h1>
       <nav class="main-nav">
-        <a class="nav-btn" href="/index.html">Voltar ao Calendário</a>
+        <a class="btn-secondary" href="/index.html">Voltar ao Calendário</a>
       </nav>
     </div>
   </header>
 
-  <main class="main-content container">
-    <div id="boot-status">Carregando configurações…</div>
+  <main class="main-content container" style="max-width:1100px; margin: 0 auto;">
+    <div id="boot-status">Inicializando configurações…</div>
 
-    <!-- Configurações gerais -->
+    <!-- Estatísticas (opcional) -->
     <section class="content-section">
-      <h2>⚙️ Configurações Gerais</h2>
-      <div class="form-group">
-        <label for="site-name">Nome do Sistema</label>
-        <input type="text" id="site-name" placeholder="Nome que aparece no topo do sistema" />
-      </div>
-      <button class="btn-primary" id="btn-save-general">Salvar Configurações</button>
-    </section>
-
-    <!-- Limites -->
-    <section class="content-section">
-      <h2>🗓️ Limites de Agendamento</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="max-weddings-per-day">Máximo de Casamentos por Dia</label>
-          <input type="number" id="max-weddings-per-day" min="1" value="4" />
+      <h2>📊 Estatísticas do Sistema</h2>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Total de Casamentos</div>
         </div>
-        <div class="form-group">
-          <label for="max-community-per-day">Máximo de Comunitários por Dia</label>
-          <input type="number" id="max-community-per-day" min="0" value="2" />
-        </div>
-        <div class="form-group">
-          <label for="max-couples-per-community">Máximo de Casais por Casamento Comunitário</label>
-          <input type="number" id="max-couples-per-community" min="1" value="20" />
-        </div>
-      </div>
-      <button class="btn-primary" id="btn-save-limits">Salvar Limites</button>
-    </section>
-
-    <!-- Lembretes -->
-    <section class="content-section">
-      <h2>⏰ Lembretes</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="reminder-interview-2d">2 dias antes (horas)</label>
-          <input type="number" id="reminder-interview-2d" min="1" value="48" />
-        </div>
-        <div class="form-group">
-          <label for="reminder-interview-1d">1 dia antes (horas)</label>
-          <input type="number" id="reminder-interview-1d" min="1" value="24" />
-        </div>
-        <div class="form-group">
-          <label for="reminder-interview-12h">12h antes (horas)</label>
-          <input type="number" id="reminder-interview-12h" min="1" value="12" />
-        </div>
-      </div>
-      <button class="btn-primary" id="btn-save-reminders">Salvar Lembretes</button>
-    </section>
-  </main>
-
-  <!-- ORDEM IMPORTA! (no fim do body, sem defer) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="/config/supabase.js"></script>
-  <script src="/src/database.js"></script>
-
-  <script>
-    function setBootStatus(msg, isErr=false) {
-      const el = document.getElementById('boot-status');
-      if (!el) return;
-      el.textContent = msg;
-      el.classList.toggle('error', !!isErr);
-    }
-
-    async function loadConfigsIntoForm() {
-      const cfg = await window.db.getConfig();
-      const getCfg = (k, def) => {
-        const row = cfg.find(c => c.config_key === k);
-        return row ? row.config_value : def;
-      };
-
-      document.getElementById('site-name').value = getCfg('site_name', '');
-
-      document.getElementById('max-weddings-per-day').value = getCfg('max_weddings_per_day', 4);
-      document.getElementById('max-community-per-day').value = getCfg('max_community_weddings', 2);
-      document.getElementById('max-couples-per-community').value = getCfg('max_couples_per_community', 20);
-
-      document.getElementById('reminder-interview-2d').value = getCfg('reminder_interview_2d', 48);
-      document.getElementById('reminder-interview-1d').value = getCfg('reminder_interview_1d', 24);
-      document.getElementById('reminder-interview-12h').value = getCfg('reminder_interview_12h', 12);
-    }
-
-    async function saveGeneral() {
-      await window.db.updateConfig('site_name', document.getElementById('site-name').value);
-      alert('Configurações gerais salvas.');
-    }
-    async function saveLimits() {
-      await window.db.updateConfig('max_weddings_per_day', document.getElementById('max-weddings-per-day').value);
-      await window.db.updateConfig('max_community_weddings', document.getElementById('max-community-per-day').value);
-      await window.db.updateConfig('max_couples_per_community', document.getElementById('max-couples-per-community').value);
-      alert('Limites salvos.');
-    }
-    async function saveReminders() {
-      await window.db.updateConfig('reminder_interview_2d', document.getElementById('reminder-interview-2d').value);
-      await window.db.updateConfig('reminder_interview_1d', document.getElementById('reminder-interview-1d').value);
-      await window.db.updateConfig('reminder_interview_12h', document.getElementById('reminder-interview-12h').value);
-      alert('Lembretes salvos.');
-    }
-
-    // Boot robusto com timeout visual
-    (async () => {
-      setBootStatus('Inicializando conexão...');
-      const okInit = await window.initSupabase();
-      if (!okInit) { setBootStatus('Erro ao inicializar o Supabase. Verifique /config/supabase.js e a rede.', true); return; }
-
-      const okPing = await window.checkSupabaseConnection();
-      if (!okPing) { setBootStatus('Não foi possível conectar ao banco. Tente novamente.', true); return; }
-
-      // Se demorar mais de 8s para buscar configurações, mostra aviso
-      const slowTimer = setTimeout(() => {
-        setBootStatus('Carregando dados (lento)... verifique sua rede.', false);
-      }, 8000);
-
-      try {
-        await loadConfigsIntoForm();
-        clearTimeout(slowTimer);
-        setBootStatus('Configurações carregadas.');
-        // Oculta o banner após alguns segundos
-        setTimeout(() => {
-          const el = document.getElementById('boot-status');
-          if (el) el.style.display = 'none';
-        }, 1500);
-      } catch (e) {
-        clearTimeout(slowTimer);
-        console.error(e);
-        setBootStatus('Erro ao buscar configuração: ' + (e?.message || e), true);
-      }
-    })();
-
-    // Listeners de salvar
-    document.getElementById('btn-save-general').addEventListener('click', () => {
-      saveGeneral().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), true));
-    });
-    document.getElementById('btn-save-limits').addEventListener('click', () => {
-      saveLimits().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), true));
-    });
-    document.getElementById('btn-save-reminders').addEventListener('click', () => {
-      saveReminders().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), true));
-    });
-  </script>
-</body>
-</html>
+        <div class="card">
+          <div class="stat-value" id="stat-month">0</div>
+          <div clas
