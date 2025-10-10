@@ -1,445 +1,343 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurações - Sistema de Agendamento</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Configurações - Sistema de Agendamento</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-    <!-- Header -->
-    <header class="main-header">
-        <div class="container">
-            <h1>Configurações do Sistema</h1>
-            <nav class="main-nav">
-                <button class="nav-btn" onclick="window.location.href='/'">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                    Voltar ao Calendário
-                </button>
-            </nav>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <div class="config-container">
-            
-            <!-- Estatísticas -->
-            <section class="config-section">
-                <h2>📊 Estatísticas do Sistema</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background-color: #dbeafe;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="stat-total">0</div>
-                            <div class="stat-label">Total de Casamentos</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background-color: #dcfce7;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="stat-month">0</div>
-                            <div class="stat-label">Este Mês</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background-color: #fed7aa;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ea580c">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="stat-community">0</div>
-                            <div class="stat-label">Comunitários</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background-color: #e0e7ff;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="stat-civil">0</div>
-                            <div class="stat-label">Com Efeito Civil</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Configurações Gerais -->
-            <section class="config-section">
-                <h2>⚙️ Configurações Gerais</h2>
-                <form id="form-general-config" class="config-form">
-                    <div class="form-group">
-                        <label for="config-site-name">Nome do Sistema</label>
-                        <input type="text" id="config-site-name" class="uppercase-input">
-                        <small class="form-help">Nome que aparece no topo do sistema</small>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Salvar Configurações</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Limites -->
-            <section class="config-section">
-                <h2>📅 Limites de Agendamento</h2>
-                <form id="form-schedule-config" class="config-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="config-max-weddings">Máximo de Casamentos por Dia</label>
-                            <input type="number" id="config-max-weddings" min="1" max="20">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="config-max-community">Máximo de Comunitários por Dia</label>
-                            <input type="number" id="config-max-community" min="0" max="10">
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Salvar Limites</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Lembretes -->
-            <section class="config-section">
-                <h2>🔔 Lembretes</h2>
-                <form id="form-reminder-config" class="config-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="config-reminder-2d">2 dias antes (horas)</label>
-                            <input type="number" id="config-reminder-2d" min="1" max="168">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="config-reminder-1d">1 dia antes (horas)</label>
-                            <input type="number" id="config-reminder-1d" min="1" max="72">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="config-reminder-12h">12h antes (horas)</label>
-                            <input type="number" id="config-reminder-12h" min="1" max="24">
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">💾 Salvar Lembretes</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Locais -->
-            <section class="config-section">
-                <h2>🏛️ Gerenciamento de Locais</h2>
-                <div class="section-header">
-                    <button type="button" class="btn-primary" onclick="configApp.showAddLocationModal()">
-                        ➕ Adicionar Local
-                    </button>
-                </div>
-                
-                <div class="data-table">
-                    <table id="locations-table">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Endereço</th>
-                                <th>Capacidade</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px;">
-                                    <div class="loading"></div>
-                                    <p>Carregando...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Celebrantes -->
-            <section class="config-section">
-                <h2>⛪ Gerenciamento de Celebrantes</h2>
-                <div class="section-header">
-                    <button type="button" class="btn-primary" onclick="configApp.showAddCelebrantModal()">
-                        ➕ Adicionar Celebrante
-                    </button>
-                </div>
-                
-                <div class="data-table">
-                    <table id="celebrants-table">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Título</th>
-                                <th>Telefone</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px;">
-                                    <div class="loading"></div>
-                                    <p>Carregando...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-        </div>
-    </main>
-
-    <!-- Modal: Add Location -->
-    <div id="modal-add-location" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3>Adicionar Novo Local</h3>
-                <button class="btn-close" onclick="configApp.closeModal('modal-add-location')">&times;</button>
-            </div>
-            <form id="form-add-location">
-                <div style="padding: 1.5rem;">
-                    <div class="form-group">
-                        <label for="new-location-name">Nome do Local <span class="required">*</span></label>
-                        <input type="text" id="new-location-name" required class="uppercase-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="new-location-address">Endereço</label>
-                        <input type="text" id="new-location-address" class="uppercase-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="new-location-capacity">Capacidade</label>
-                        <input type="number" id="new-location-capacity" min="0" placeholder="Ex: 300">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-add-location')">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn-primary">
-                        ➕ Adicionar
-                    </button>
-                </div>
-            </form>
-        </div>
+  <header class="main-header">
+    <div class="container">
+      <h1>Configurações do Sistema</h1>
+      <nav class="main-nav">
+        <a class="nav-btn" href="/index.html">Voltar ao Calendário</a>
+      </nav>
     </div>
+  </header>
 
-    <!-- Modal: Edit Location -->
-    <div id="modal-edit-location" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3>Editar Local</h3>
-                <button class="btn-close" onclick="configApp.closeModal('modal-edit-location')">&times;</button>
-            </div>
-            <form id="form-edit-location">
-                <input type="hidden" id="edit-location-id">
-                <div style="padding: 1.5rem;">
-                    <div class="form-group">
-                        <label for="edit-location-name">Nome do Local <span class="required">*</span></label>
-                        <input type="text" id="edit-location-name" required class="uppercase-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-location-address">Endereço</label>
-                        <input type="text" id="edit-location-address" class="uppercase-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-location-capacity">Capacidade</label>
-                        <input type="number" id="edit-location-capacity" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-location-active">Status</label>
-                        <select id="edit-location-active">
-                            <option value="true">Ativo</option>
-                            <option value="false">Inativo</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-edit-location')">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn-primary">
-                        💾 Salvar Alterações
-                    </button>
-                </div>
-            </form>
+  <main class="main-content container">
+
+    <!-- Estatísticas simples (opcional) -->
+    <section class="content-section">
+      <h2>📊 Estatísticas do Sistema</h2>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Total de Casamentos</div>
         </div>
-    </div>
-
-    <!-- Modal: Add Celebrant -->
-    <div id="modal-add-celebrant" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3>Adicionar Novo Celebrante</h3>
-                <button class="btn-close" onclick="configApp.closeModal('modal-add-celebrant')">&times;</button>
-            </div>
-            <form id="form-add-celebrant">
-                <div style="padding: 1.5rem;">
-                    <div class="form-group">
-                        <label for="new-celebrant-name">Nome Completo <span class="required">*</span></label>
-                        <input type="text" id="new-celebrant-name" required class="uppercase-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="new-celebrant-title">Título <span class="required">*</span></label>
-                        <select id="new-celebrant-title" required>
-                            <option value="">Selecione...</option>
-                            <option value="PADRE">Padre</option>
-                            <option value="DIÁCONO">Diácono</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="new-celebrant-phone">Telefone</label>
-                        <input type="tel" id="new-celebrant-phone" placeholder="(11) 99999-9999">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-add-celebrant')">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn-primary">
-                        ➕ Adicionar
-                    </button>
-                </div>
-            </form>
+        <div class="card">
+          <div class="stat-value" id="stat-month">0</div>
+          <div class="stat-label">Este Mês</div>
         </div>
-    </div>
-
-    <!-- Modal: Edit Celebrant -->
-    <div id="modal-edit-celebrant" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3>Editar Celebrante</h3>
-                <button class="btn-close" onclick="configApp.closeModal('modal-edit-celebrant')">&times;</button>
-            </div>
-            <form id="form-edit-celebrant">
-                <input type="hidden" id="edit-celebrant-id">
-                <div style="padding: 1.5rem;">
-                    <div class="form-group">
-                        <label for="edit-celebrant-name">Nome Completo <span class="required">*</span></label>
-                        <input type="text" id="edit-celebrant-name" required class="uppercase-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-celebrant-title">Título <span class="required">*</span></label>
-                        <select id="edit-celebrant-title" required>
-                            <option value="">Selecione...</option>
-                            <option value="PADRE">Padre</option>
-                            <option value="DIÁCONO">Diácono</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-celebrant-phone">Telefone</label>
-                        <input type="tel" id="edit-celebrant-phone" placeholder="(11) 99999-9999">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-celebrant-active">Status</label>
-                        <select id="edit-celebrant-active">
-                            <option value="true">Ativo</option>
-                            <option value="false">Inativo</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-edit-celebrant')">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn-primary">
-                        💾 Salvar Alterações
-                    </button>
-                </div>
-            </form>
+        <div class="card">
+          <div class="stat-value" id="stat-community">0</div>
+          <div class="stat-label">Comunitários</div>
         </div>
-    </div>
-
-    <!-- Modal: Confirm Delete -->
-    <div id="modal-confirm" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h3 id="confirm-title">Confirmar Ação</h3>
-                <button class="btn-close" onclick="configApp.closeModal('modal-confirm')">&times;</button>
-            </div>
-            <div style="padding: 1.5rem;">
-                <p id="confirm-message" style="font-size: 1rem; line-height: 1.6;"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="configApp.closeModal('modal-confirm')">
-                    Cancelar
-                </button>
-                <button type="button" class="btn-primary" id="confirm-action-btn" style="background-color: var(--danger-color);">
-                    Confirmar
-                </button>
-            </div>
+        <div class="card">
+          <div class="stat-value" id="stat-civil">0</div>
+          <div class="stat-label">Com Efeito Civil</div>
         </div>
+      </div>
+    </section>
+
+    <!-- Configurações gerais -->
+    <section class="content-section">
+      <h2>⚙️ Configurações Gerais</h2>
+      <div class="form-group">
+        <label for="site-name">Nome do Sistema</label>
+        <input type="text" id="site-name" placeholder="Nome que aparece no topo do sistema" />
+      </div>
+      <button class="btn-primary" id="btn-save-general">Salvar Configurações</button>
+    </section>
+
+    <!-- Limites -->
+    <section class="content-section">
+      <h2>🗓️ Limites de Agendamento</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="max-weddings-per-day">Máximo de Casamentos por Dia</label>
+          <input type="number" id="max-weddings-per-day" min="1" value="4" />
+        </div>
+        <div class="form-group">
+          <label for="max-community-per-day">Máximo de Comunitários por Dia</label>
+          <input type="number" id="max-community-per-day" min="0" value="2" />
+        </div>
+        <div class="form-group">
+          <label for="max-couples-per-community">Máximo de Casais por Casamento Comunitário</label>
+          <input type="number" id="max-couples-per-community" min="1" value="20" />
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-save-limits">Salvar Limites</button>
+    </section>
+
+    <!-- Lembretes -->
+    <section class="content-section">
+      <h2>⏰ Lembretes</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="reminder-interview-2d">2 dias antes (horas)</label>
+          <input type="number" id="reminder-interview-2d" min="1" value="48" />
+        </div>
+        <div class="form-group">
+          <label for="reminder-interview-1d">1 dia antes (horas)</label>
+          <input type="number" id="reminder-interview-1d" min="1" value="24" />
+        </div>
+        <div class="form-group">
+          <label for="reminder-interview-12h">12h antes (horas)</label>
+          <input type="number" id="reminder-interview-12h" min="1" value="12" />
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-save-reminders">Salvar Lembretes</button>
+    </section>
+
+    <!-- Gerenciamento de Locais -->
+    <section class="content-section">
+      <h2>🏛️ Gerenciamento de Locais</h2>
+      <button class="btn-secondary" id="btn-open-add-location">➕ Adicionar Local</button>
+      <div class="table-responsive" style="margin-top: 1rem;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nome</th><th>Endereço</th><th>Capacidade</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="locations-table-body">
+            <tr><td colspan="5">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Gerenciamento de Celebrantes -->
+    <section class="content-section">
+      <h2>⛪ Gerenciamento de Celebrantes</h2>
+      <button class="btn-secondary" id="btn-open-add-celebrant">➕ Adicionar Celebrante</button>
+      <div class="table-responsive" style="margin-top: 1rem;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nome</th><th>Título</th><th>Telefone</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="celebrants-table-body">
+            <tr><td colspan="5">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modais mínimos (adicionar) -->
+  <div id="modal-add-location" class="modal">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h3>Adicionar Novo Local</h3>
+        <button class="btn-close" onclick="closeModal('modal-add-location')">&times;</button>
+      </div>
+      <form id="form-add-location">
+        <div class="form-group">
+          <label for="new-location-name">Nome do Local *</label>
+          <input type="text" id="new-location-name" required class="uppercase-input" />
+        </div>
+        <div class="form-group">
+          <label for="new-location-address">Endereço</label>
+          <input type="text" id="new-location-address" class="uppercase-input" />
+        </div>
+        <div class="form-group">
+          <label for="new-location-capacity">Capacidade</label>
+          <input type="number" id="new-location-capacity" min="0" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-add-location')">Cancelar</button>
+          <button type="submit" class="btn-primary">➕ Adicionar</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Notifications -->
-    <div id="notification-container" class="notification-container"></div>
+  <div id="modal-add-celebrant" class="modal">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h3>Adicionar Novo Celebrante</h3>
+        <button class="btn-close" onclick="closeModal('modal-add-celebrant')">&times;</button>
+      </div>
+      <form id="form-add-celebrant">
+        <div class="form-group">
+          <label for="new-celebrant-name">Nome Completo *</label>
+          <input type="text" id="new-celebrant-name" required class="uppercase-input" />
+        </div>
+        <div class="form-group">
+          <label for="new-celebrant-title">Título *</label>
+          <select id="new-celebrant-title" required>
+            <option value="">Selecione...</option>
+            <option value="PADRE">Padre</option>
+            <option value="DIÁCONO">Diácono</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="new-celebrant-phone">Telefone</label>
+          <input type="tel" id="new-celebrant-phone" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-add-celebrant')">Cancelar</button>
+          <button type="submit" class="btn-primary">➕ Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    <!-- Estilos adicionais -->
-    <style>
-        .config-container { max-width: 1200px; margin: 0 auto; }
-        .config-section { background-color: var(--surface); border-radius: var(--radius-lg); padding: var(--spacing-xl); margin-bottom: var(--spacing-xl); box-shadow: var(--shadow-md); }
-        .config-section h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: var(--spacing-lg); }
-        .config-form { max-width: 800px; }
-        .section-header { display: flex; justify-content: flex-end; margin-bottom: var(--spacing-md); }
-        .data-table { overflow-x: auto; }
-        .data-table table { width: 100%; border-collapse: collapse; }
-        .data-table th, .data-table td { padding: var(--spacing-md); text-align: left; border-bottom: 1px solid var(--border); }
-        .data-table th { font-weight: 600; color: var(--text-secondary); background-color: var(--background); }
-        .data-table tr:hover { background-color: var(--background); }
-        .table-actions { display: flex; gap: var(--spacing-sm); }
-        .btn-table { padding: 4px 12px; background-color: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; transition: all var(--transition); font-size: 0.875rem; }
-        .btn-table:hover { background-color: var(--primary-light); border-color: var(--primary-color); color: var(--primary-color); }
-        .btn-table.danger:hover { background-color: #fee2e2; border-color: var(--danger-color); color: var(--danger-color); }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 500; }
-        .status-badge.active { background-color: #d1fae5; color: #065f46; }
-        .status-badge.inactive { background-color: #fee2e2; color: #991b1b; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg); }
-        .stat-card { background-color: var(--background); border-radius: var(--radius-md); padding: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-md); }
-        .stat-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
-        .stat-value { font-size: 2rem; font-weight: 700; }
-        .stat-label { font-size: 0.875rem; color: var(--text-secondary); }
-        .modal-footer { padding: var(--spacing-lg) var(--spacing-xl); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--spacing-md); }
-    </style>
+  <!-- Scripts do app -->
+  <script src="/config/supabase.js"></script>
+  <script src="/src/database.js"></script>
+  <script src="/src/validation.js"></script>
 
-    <!-- Scripts -->
-    <script src="/config/supabase.js"></script>
-    <script src="/src/database.js"></script>
-    <script src="/src/validation.js"></script>
-    <script src="/src/config-app.js"></script>
+  <script>
+    // Utilidades de modal
+    function openModal(id) {
+      document.getElementById(id)?.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal(id) {
+      document.getElementById(id)?.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    // Carregar configs do servidor
+    async function loadConfigs() {
+      const configs = await window.db.getConfig();
+      const getCfg = (k, def) => {
+        const row = configs.find(c => c.config_key === k);
+        return row ? row.config_value : def;
+      };
+
+      // Gerais
+      document.getElementById('site-name').value = getCfg('site_name', '');
+
+      // Limites
+      document.getElementById('max-weddings-per-day').value = getCfg('max_weddings_per_day', 4);
+      document.getElementById('max-community-per-day').value = getCfg('max_community_weddings', 2);
+      document.getElementById('max-couples-per-community').value = getCfg('max_couples_per_community', 20);
+
+      // Lembretes
+      document.getElementById('reminder-interview-2d').value = getCfg('reminder_interview_2d', 48);
+      document.getElementById('reminder-interview-1d').value = getCfg('reminder_interview_1d', 24);
+      document.getElementById('reminder-interview-12h').value = getCfg('reminder_interview_12h', 12);
+    }
+
+    // Salvar blocos de configuração
+    async function saveGeneral() {
+      await window.db.updateConfig('site_name', document.getElementById('site-name').value);
+      alert('Configurações gerais salvas.');
+    }
+    async function saveLimits() {
+      await window.db.updateConfig('max_weddings_per_day', document.getElementById('max-weddings-per-day').value);
+      await window.db.updateConfig('max_community_weddings', document.getElementById('max-community-per-day').value);
+      await window.db.updateConfig('max_couples_per_community', document.getElementById('max-couples-per-community').value);
+      alert('Limites salvos.');
+    }
+    async function saveReminders() {
+      await window.db.updateConfig('reminder_interview_2d', document.getElementById('reminder-interview-2d').value);
+      await window.db.updateConfig('reminder_interview_1d', document.getElementById('reminder-interview-1d').value);
+      await window.db.updateConfig('reminder_interview_12h', document.getElementById('reminder-interview-12h').value);
+      alert('Lembretes salvos.');
+    }
+
+    // Listagens básicas (opcional)
+    async function loadLocations() {
+      const tbody = document.getElementById('locations-table-body');
+      try {
+        const rows = await window.db.getLocations(true);
+        tbody.innerHTML = rows.length
+          ? rows.map(l => `
+              <tr>
+                <td>${l.name}</td>
+                <td>${l.address ?? ''}</td>
+                <td>${l.capacity ?? ''}</td>
+                <td>${l.is_active ? 'Ativo' : 'Inativo'}</td>
+                <td></td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="5">Sem registros</td></tr>';
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar locais</td></tr>';
+      }
+    }
+    async function loadCelebrants() {
+      const tbody = document.getElementById('celebrants-table-body');
+      try {
+        const rows = await window.db.getCelebrants(true);
+        tbody.innerHTML = rows.length
+          ? rows.map(c => `
+              <tr>
+                <td>${c.name}</td>
+                <td>${c.title}</td>
+                <td>${c.phone ?? ''}</td>
+                <td>${c.is_active ? 'Ativo' : 'Inativo'}</td>
+                <td></td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="5">Sem registros</td></tr>';
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar celebrantes</td></tr>';
+      }
+    }
+
+    // Modais "Adicionar"
+    document.getElementById('btn-open-add-location').addEventListener('click', () => openModal('modal-add-location'));
+    document.getElementById('btn-open-add-celebrant').addEventListener('click', () => openModal('modal-add-celebrant'));
+
+    document.getElementById('form-add-location').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('new-location-name').value,
+        address: document.getElementById('new-location-address').value,
+        capacity: parseInt(document.getElementById('new-location-capacity').value || '0', 10) || null,
+        is_active: true
+      };
+      try {
+        await window.db.addLocation(payload);
+        closeModal('modal-add-location');
+        await loadLocations();
+      } catch (err) {
+        alert('Erro ao adicionar local');
+      }
+    });
+
+    document.getElementById('form-add-celebrant').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('new-celebrant-name').value,
+        title: document.getElementById('new-celebrant-title').value,
+        phone: document.getElementById('new-celebrant-phone').value || null,
+        is_active: true
+      };
+      try {
+        await window.db.addCelebrant(payload);
+        closeModal('modal-add-celebrant');
+        await loadCelebrants();
+      } catch (err) {
+        alert('Erro ao adicionar celebrante');
+      }
+    });
+
+    // Botões salvar
+    document.getElementById('btn-save-general').addEventListener('click', saveGeneral);
+    document.getElementById('btn-save-limits').addEventListener('click', saveLimits);
+    document.getElementById('btn-save-reminders').addEventListener('click', saveReminders);
+
+    // Boot
+    (async () => {
+      const ok = await window.checkSupabaseConnection();
+      if (!ok) {
+        alert('Erro ao conectar ao banco. Verifique a configuração.');
+        return;
+      }
+      await loadConfigs();
+      await loadLocations();
+      await loadCelebrants();
+    })();
+  </script>
 </body>
 </html>
