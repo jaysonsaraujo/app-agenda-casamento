@@ -530,8 +530,47 @@
   })();
 </script>
 
+        <!-- ===== Supabase: ordem correta + fallback ===== -->
+<!-- 1) SDK do Supabase (obrigatório vir antes de tudo que usa Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2) Tenta criar window.supabaseClient via /config/supabase.js -->
+<script src="/config/supabase.js" onerror="window.__sbCfgFailed=true"></script>
+
+<!-- 3) Fallback: se /config/supabase.js não carregou, cria o cliente aqui -->
+<script>
+(function () {
+  try {
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      console.error('[index] SDK do Supabase não carregou.');
+      return;
+    }
+    if (!window.supabaseClient) {
+      console.warn('[index] /config/supabase.js não carregou (ou não criou o cliente). Usando fallback inline.');
+      const { createClient } = window.supabase;
+      window.supabaseClient = createClient(
+        'https://aplicativos-db-phm2-supabase.xqzrhl.easypanel.host',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE',
+        { auth: { persistSession: false }, global: { headers: { 'x-client-info': 'casamentos-app/1.0' } } }
+      );
+    }
+  } catch (e) {
+    console.error('[index] Falha ao inicializar Supabase (fallback):', e);
+  }
+})();
+</script>
+
+<!-- 4) Camada de acesso ao banco (usa window.supabaseClient) -->
+<script src="/src/database.js"></script>
+
+<!-- 5) Scripts desta página (ajuste os nomes se forem outros) -->
+<script src="/src/calendar.js"></script>
+<script src="/src/app.js"></script>
+<!-- =============================================== -->
+
         
 </body>
 </html>
+
 
 
