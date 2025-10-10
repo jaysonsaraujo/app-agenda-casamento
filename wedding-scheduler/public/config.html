@@ -18,7 +18,7 @@
 
   <main class="main-content container">
 
-    <!-- Estatísticas simples (opcional) -->
+    <!-- Estatísticas simples -->
     <section class="content-section">
       <h2>📊 Estatísticas do Sistema</h2>
       <div class="cards-grid">
@@ -129,67 +129,12 @@
 
   </main>
 
-  <!-- Modais mínimos (adicionar) -->
-  <div id="modal-add-location" class="modal">
-    <div class="modal-content modal-small">
-      <div class="modal-header">
-        <h3>Adicionar Novo Local</h3>
-        <button class="btn-close" onclick="closeModal('modal-add-location')">&times;</button>
-      </div>
-      <form id="form-add-location">
-        <div class="form-group">
-          <label for="new-location-name">Nome do Local *</label>
-          <input type="text" id="new-location-name" required class="uppercase-input" />
-        </div>
-        <div class="form-group">
-          <label for="new-location-address">Endereço</label>
-          <input type="text" id="new-location-address" class="uppercase-input" />
-        </div>
-        <div class="form-group">
-          <label for="new-location-capacity">Capacidade</label>
-          <input type="number" id="new-location-capacity" min="0" />
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick="closeModal('modal-add-location')">Cancelar</button>
-          <button type="submit" class="btn-primary">➕ Adicionar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div id="modal-add-celebrant" class="modal">
-    <div class="modal-content modal-small">
-      <div class="modal-header">
-        <h3>Adicionar Novo Celebrante</h3>
-        <button class="btn-close" onclick="closeModal('modal-add-celebrant')">&times;</button>
-      </div>
-      <form id="form-add-celebrant">
-        <div class="form-group">
-          <label for="new-celebrant-name">Nome Completo *</label>
-          <input type="text" id="new-celebrant-name" required class="uppercase-input" />
-        </div>
-        <div class="form-group">
-          <label for="new-celebrant-title">Título *</label>
-          <select id="new-celebrant-title" required>
-            <option value="">Selecione...</option>
-            <option value="PADRE">Padre</option>
-            <option value="DIÁCONO">Diácono</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="new-celebrant-phone">Telefone</label>
-          <input type="tel" id="new-celebrant-phone" />
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick="closeModal('modal-add-celebrant')">Cancelar</button>
-          <button type="submit" class="btn-primary">➕ Adicionar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Scripts do app -->
+  <!-- ORDEM IMPORTA! -->
+  <!-- 1) UMD do Supabase (CDN + fallback via supabase.js se necessário) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+  <!-- 2) Inicialização resiliente do Supabase (define window.initSupabase & window.checkSupabaseConnection) -->
   <script src="/config/supabase.js"></script>
+  <!-- 3) Seu código que usa supabaseClient -->
   <script src="/src/database.js"></script>
   <script src="/src/validation.js"></script>
 
@@ -204,29 +149,21 @@
       document.body.style.overflow = '';
     }
 
-    // Carregar configs do servidor
     async function loadConfigs() {
       const configs = await window.db.getConfig();
       const getCfg = (k, def) => {
         const row = configs.find(c => c.config_key === k);
         return row ? row.config_value : def;
       };
-
-      // Gerais
       document.getElementById('site-name').value = getCfg('site_name', '');
-
-      // Limites
       document.getElementById('max-weddings-per-day').value = getCfg('max_weddings_per_day', 4);
       document.getElementById('max-community-per-day').value = getCfg('max_community_weddings', 2);
       document.getElementById('max-couples-per-community').value = getCfg('max_couples_per_community', 20);
-
-      // Lembretes
       document.getElementById('reminder-interview-2d').value = getCfg('reminder_interview_2d', 48);
       document.getElementById('reminder-interview-1d').value = getCfg('reminder_interview_1d', 24);
       document.getElementById('reminder-interview-12h').value = getCfg('reminder_interview_12h', 12);
     }
 
-    // Salvar blocos de configuração
     async function saveGeneral() {
       await window.db.updateConfig('site_name', document.getElementById('site-name').value);
       alert('Configurações gerais salvas.');
@@ -244,94 +181,47 @@
       alert('Lembretes salvos.');
     }
 
-    // Listagens básicas (opcional)
-    async function loadLocations() {
-      const tbody = document.getElementById('locations-table-body');
-      try {
-        const rows = await window.db.getLocations(true);
-        tbody.innerHTML = rows.length
-          ? rows.map(l => `
-              <tr>
-                <td>${l.name}</td>
-                <td>${l.address ?? ''}</td>
-                <td>${l.capacity ?? ''}</td>
-                <td>${l.is_active ? 'Ativo' : 'Inativo'}</td>
-                <td></td>
-              </tr>
-            `).join('')
-          : '<tr><td colspan="5">Sem registros</td></tr>';
-      } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar locais</td></tr>';
-      }
-    }
-    async function loadCelebrants() {
-      const tbody = document.getElementById('celebrants-table-body');
-      try {
-        const rows = await window.db.getCelebrants(true);
-        tbody.innerHTML = rows.length
-          ? rows.map(c => `
-              <tr>
-                <td>${c.name}</td>
-                <td>${c.title}</td>
-                <td>${c.phone ?? ''}</td>
-                <td>${c.is_active ? 'Ativo' : 'Inativo'}</td>
-                <td></td>
-              </tr>
-            `).join('')
-          : '<tr><td colspan="5">Sem registros</td></tr>';
-      } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar celebrantes</td></tr>';
-      }
-    }
-
-    // Modais "Adicionar"
-    document.getElementById('btn-open-add-location').addEventListener('click', () => openModal('modal-add-location'));
-    document.getElementById('btn-open-add-celebrant').addEventListener('click', () => openModal('modal-add-celebrant'));
-
-    document.getElementById('form-add-location').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: document.getElementById('new-location-name').value,
-        address: document.getElementById('new-location-address').value,
-        capacity: parseInt(document.getElementById('new-location-capacity').value || '0', 10) || null,
-        is_active: true
-      };
-      try {
-        await window.db.addLocation(payload);
-        closeModal('modal-add-location');
-        await loadLocations();
-      } catch (err) {
-        alert('Erro ao adicionar local');
-      }
-    });
-
-    document.getElementById('form-add-celebrant').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: document.getElementById('new-celebrant-name').value,
-        title: document.getElementById('new-celebrant-title').value,
-        phone: document.getElementById('new-celebrant-phone').value || null,
-        is_active: true
-      };
-      try {
-        await window.db.addCelebrant(payload);
-        closeModal('modal-add-celebrant');
-        await loadCelebrants();
-      } catch (err) {
-        alert('Erro ao adicionar celebrante');
-      }
-    });
-
-    // Botões salvar
     document.getElementById('btn-save-general').addEventListener('click', saveGeneral);
     document.getElementById('btn-save-limits').addEventListener('click', saveLimits);
     document.getElementById('btn-save-reminders').addEventListener('click', saveReminders);
 
-    // Boot
+    document.getElementById('btn-open-add-location')?.addEventListener('click', () => openModal('modal-add-location'));
+    document.getElementById('btn-open-add-celebrant')?.addEventListener('click', () => openModal('modal-add-celebrant'));
+
+    // Listagens simples
+    async function loadLocations() {
+      const tb = document.getElementById('locations-table-body');
+      try {
+        const rows = await window.db.getLocations(true);
+        tb.innerHTML = rows.length
+          ? rows.map(l => `<tr><td>${l.name}</td><td>${l.address ?? ''}</td><td>${l.capacity ?? ''}</td><td>${l.is_active ? 'Ativo' : 'Inativo'}</td><td></td></tr>`).join('')
+          : '<tr><td colspan="5">Sem registros</td></tr>';
+      } catch {
+        tb.innerHTML = '<tr><td colspan="5">Erro ao carregar locais</td></tr>';
+      }
+    }
+    async function loadCelebrants() {
+      const tb = document.getElementById('celebrants-table-body');
+      try {
+        const rows = await window.db.getCelebrants(true);
+        tb.innerHTML = rows.length
+          ? rows.map(c => `<tr><td>${c.name}</td><td>${c.title}</td><td>${c.phone ?? ''}</td><td>${c.is_active ? 'Ativo' : 'Inativo'}</td><td></td></tr>`).join('')
+          : '<tr><td colspan="5">Sem registros</td></tr>';
+      } catch {
+        tb.innerHTML = '<tr><td colspan="5">Erro ao carregar celebrantes</td></tr>';
+      }
+    }
+
+    // Boot com segurança: garante cliente criado antes de usar window.db
     (async () => {
-      const ok = await window.checkSupabaseConnection();
+      const ok = await window.initSupabase();
       if (!ok) {
-        alert('Erro ao conectar ao banco. Verifique a configuração.');
+        alert('Erro ao inicializar o Supabase. Verifique /api/config e a rede.');
+        return;
+      }
+      const connected = await window.checkSupabaseConnection();
+      if (!connected) {
+        alert('Não foi possível conectar ao banco. Tente novamente.');
         return;
       }
       await loadConfigs();
