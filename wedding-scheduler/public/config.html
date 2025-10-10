@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Configurações - Sistema de Agendamento</title>
   <link rel="stylesheet" href="/styles.css" />
+  <style>
+    #boot-status {
+      margin: 16px 0; padding: 12px 16px; border-radius: 8px;
+      background: #F1F5F9; color: #0f172a; font-size: 14px;
+    }
+    #boot-status.error { background:#FEF2F2; color:#991B1B; }
+  </style>
 </head>
 <body>
   <header class="main-header">
@@ -17,29 +24,7 @@
   </header>
 
   <main class="main-content container">
-
-    <!-- Estatísticas simples -->
-    <section class="content-section">
-      <h2>📊 Estatísticas do Sistema</h2>
-      <div class="cards-grid">
-        <div class="card">
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-label">Total de Casamentos</div>
-        </div>
-        <div class="card">
-          <div class="stat-value" id="stat-month">0</div>
-          <div class="stat-label">Este Mês</div>
-        </div>
-        <div class="card">
-          <div class="stat-value" id="stat-community">0</div>
-          <div class="stat-label">Comunitários</div>
-        </div>
-        <div class="card">
-          <div class="stat-value" id="stat-civil">0</div>
-          <div class="stat-label">Com Efeito Civil</div>
-        </div>
-      </div>
-    </section>
+    <div id="boot-status">Carregando configurações…</div>
 
     <!-- Configurações gerais -->
     <section class="content-section">
@@ -90,75 +75,34 @@
       </div>
       <button class="btn-primary" id="btn-save-reminders">Salvar Lembretes</button>
     </section>
-
-    <!-- Gerenciamento de Locais -->
-    <section class="content-section">
-      <h2>🏛️ Gerenciamento de Locais</h2>
-      <button class="btn-secondary" id="btn-open-add-location">➕ Adicionar Local</button>
-      <div class="table-responsive" style="margin-top: 1rem;">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Nome</th><th>Endereço</th><th>Capacidade</th><th>Status</th><th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="locations-table-body">
-            <tr><td colspan="5">Carregando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Gerenciamento de Celebrantes -->
-    <section class="content-section">
-      <h2>⛪ Gerenciamento de Celebrantes</h2>
-      <button class="btn-secondary" id="btn-open-add-celebrant">➕ Adicionar Celebrante</button>
-      <div class="table-responsive" style="margin-top: 1rem;">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Nome</th><th>Título</th><th>Telefone</th><th>Status</th><th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="celebrants-table-body">
-            <tr><td colspan="5">Carregando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
   </main>
 
-  <!-- ORDEM IMPORTA! -->
-  <!-- 1) UMD do Supabase (CDN + fallback via supabase.js se necessário) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-  <!-- 2) Inicialização resiliente do Supabase (define window.initSupabase & window.checkSupabaseConnection) -->
+  <!-- ORDEM IMPORTA! (no fim do body, sem defer) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/config/supabase.js"></script>
-  <!-- 3) Seu código que usa supabaseClient -->
   <script src="/src/database.js"></script>
-  <script src="/src/validation.js"></script>
 
   <script>
-    // Utilidades de modal
-    function openModal(id) {
-      document.getElementById(id)?.classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeModal(id) {
-      document.getElementById(id)?.classList.remove('show');
-      document.body.style.overflow = '';
+    function setBootStatus(msg, isErr=false) {
+      const el = document.getElementById('boot-status');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.toggle('error', !!isErr);
     }
 
-    async function loadConfigs() {
-      const configs = await window.db.getConfig();
+    async function loadConfigsIntoForm() {
+      const cfg = await window.db.getConfig();
       const getCfg = (k, def) => {
-        const row = configs.find(c => c.config_key === k);
+        const row = cfg.find(c => c.config_key === k);
         return row ? row.config_value : def;
       };
+
       document.getElementById('site-name').value = getCfg('site_name', '');
+
       document.getElementById('max-weddings-per-day').value = getCfg('max_weddings_per_day', 4);
       document.getElementById('max-community-per-day').value = getCfg('max_community_weddings', 2);
       document.getElementById('max-couples-per-community').value = getCfg('max_couples_per_community', 20);
+
       document.getElementById('reminder-interview-2d').value = getCfg('reminder_interview_2d', 48);
       document.getElementById('reminder-interview-1d').value = getCfg('reminder_interview_1d', 24);
       document.getElementById('reminder-interview-12h').value = getCfg('reminder_interview_12h', 12);
@@ -181,53 +125,46 @@
       alert('Lembretes salvos.');
     }
 
-    document.getElementById('btn-save-general').addEventListener('click', saveGeneral);
-    document.getElementById('btn-save-limits').addEventListener('click', saveLimits);
-    document.getElementById('btn-save-reminders').addEventListener('click', saveReminders);
-
-    document.getElementById('btn-open-add-location')?.addEventListener('click', () => openModal('modal-add-location'));
-    document.getElementById('btn-open-add-celebrant')?.addEventListener('click', () => openModal('modal-add-celebrant'));
-
-    // Listagens simples
-    async function loadLocations() {
-      const tb = document.getElementById('locations-table-body');
-      try {
-        const rows = await window.db.getLocations(true);
-        tb.innerHTML = rows.length
-          ? rows.map(l => `<tr><td>${l.name}</td><td>${l.address ?? ''}</td><td>${l.capacity ?? ''}</td><td>${l.is_active ? 'Ativo' : 'Inativo'}</td><td></td></tr>`).join('')
-          : '<tr><td colspan="5">Sem registros</td></tr>';
-      } catch {
-        tb.innerHTML = '<tr><td colspan="5">Erro ao carregar locais</td></tr>';
-      }
-    }
-    async function loadCelebrants() {
-      const tb = document.getElementById('celebrants-table-body');
-      try {
-        const rows = await window.db.getCelebrants(true);
-        tb.innerHTML = rows.length
-          ? rows.map(c => `<tr><td>${c.name}</td><td>${c.title}</td><td>${c.phone ?? ''}</td><td>${c.is_active ? 'Ativo' : 'Inativo'}</td><td></td></tr>`).join('')
-          : '<tr><td colspan="5">Sem registros</td></tr>';
-      } catch {
-        tb.innerHTML = '<tr><td colspan="5">Erro ao carregar celebrantes</td></tr>';
-      }
-    }
-
-    // Boot com segurança: garante cliente criado antes de usar window.db
+    // Boot robusto com timeout visual
     (async () => {
-      const ok = await window.initSupabase();
-      if (!ok) {
-        alert('Erro ao inicializar o Supabase. Verifique /api/config e a rede.');
-        return;
+      setBootStatus('Inicializando conexão...');
+      const okInit = await window.initSupabase();
+      if (!okInit) { setBootStatus('Erro ao inicializar o Supabase. Verifique /config/supabase.js e a rede.', true); return; }
+
+      const okPing = await window.checkSupabaseConnection();
+      if (!okPing) { setBootStatus('Não foi possível conectar ao banco. Tente novamente.', true); return; }
+
+      // Se demorar mais de 8s para buscar configurações, mostra aviso
+      const slowTimer = setTimeout(() => {
+        setBootStatus('Carregando dados (lento)... verifique sua rede.', false);
+      }, 8000);
+
+      try {
+        await loadConfigsIntoForm();
+        clearTimeout(slowTimer);
+        setBootStatus('Configurações carregadas.');
+        // Oculta o banner após alguns segundos
+        setTimeout(() => {
+          const el = document.getElementById('boot-status');
+          if (el) el.style.display = 'none';
+        }, 1500);
+      } catch (e) {
+        clearTimeout(slowTimer);
+        console.error(e);
+        setBootStatus('Erro ao buscar configuração: ' + (e?.message || e), true);
       }
-      const connected = await window.checkSupabaseConnection();
-      if (!connected) {
-        alert('Não foi possível conectar ao banco. Tente novamente.');
-        return;
-      }
-      await loadConfigs();
-      await loadLocations();
-      await loadCelebrants();
     })();
+
+    // Listeners de salvar
+    document.getElementById('btn-save-general').addEventListener('click', () => {
+      saveGeneral().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), true));
+    });
+    document.getElementById('btn-save-limits').addEventListener('click', () => {
+      saveLimits().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), true));
+    });
+    document.getElementById('btn-save-reminders').addEventListener('click', () => {
+      saveReminders().catch(err => setBootStatus('Erro ao salvar: ' + (err?.message || err), true));
+    });
   </script>
 </body>
 </html>
