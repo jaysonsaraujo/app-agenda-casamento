@@ -54,91 +54,87 @@ class ValidationManager {
     }
 
     isEmpty(value) {
-        return value === null || value === undefined || value.trim() === '';
+        return value === null || value === undefined || String(value).trim() === '';
     }
 
     // ===== VALIDAÇÃO DE FORMULÁRIO =====
     validateWeddingForm(formData) {
         this.errors.clear();
-        
+
+        // mapeie SEMPRE para IDs reais do DOM
         if (!formData.interview_date) {
-            this.addError('interview_date', 'Data da entrevista é obrigatória');
+            this.addError('interview-date', 'Data da entrevista é obrigatória');
         } else if (!this.isFutureDate(formData.interview_date)) {
-            this.addError('interview_date', 'Data da entrevista deve ser futura');
+            this.addError('interview-date', 'Data da entrevista deve ser futura');
         }
-        
+
         if (this.isEmpty(formData.bride_name)) {
-            this.addError('bride_name', 'Nome da noiva é obrigatório');
+            this.addError('bride-name', 'Nome da noiva é obrigatório');
         }
-        
+
         if (this.isEmpty(formData.bride_whatsapp)) {
-            this.addError('bride_whatsapp', 'WhatsApp da noiva é obrigatório');
+            this.addError('bride-whatsapp', 'WhatsApp da noiva é obrigatório');
         } else if (!this.isValidPhone(formData.bride_whatsapp)) {
-            this.addError('bride_whatsapp', 'WhatsApp inválido');
+            this.addError('bride-whatsapp', 'WhatsApp inválido');
         }
-        
+
         if (this.isEmpty(formData.groom_name)) {
-            this.addError('groom_name', 'Nome do noivo é obrigatório');
+            this.addError('groom-name', 'Nome do noivo é obrigatório');
         }
-        
+
         if (this.isEmpty(formData.groom_whatsapp)) {
-            this.addError('groom_whatsapp', 'WhatsApp do noivo é obrigatório');
+            this.addError('groom-whatsapp', 'WhatsApp do noivo é obrigatório');
         } else if (!this.isValidPhone(formData.groom_whatsapp)) {
-            this.addError('groom_whatsapp', 'WhatsApp inválido');
+            this.addError('groom-whatsapp', 'WhatsApp inválido');
         }
-        
+
         if (!formData.wedding_date) {
-            this.addError('wedding_date', 'Data do casamento é obrigatória');
+            this.addError('wedding-date', 'Data do casamento é obrigatória');
         } else if (!this.isFutureDate(formData.wedding_date)) {
-            this.addError('wedding_date', 'Data do casamento deve ser futura');
+            this.addError('wedding-date', 'Data do casamento deve ser futura');
         }
-        
+
         if (this.isEmpty(formData.wedding_time)) {
-            this.addError('wedding_time', 'Horário é obrigatório');
+            this.addError('wedding-time', 'Horário é obrigatório');
         }
-        
+
         if (!formData.location_id) {
-            this.addError('location_id', 'Local é obrigatório');
+            this.addError('location', 'Local é obrigatório');
         }
-        
+
         if (!formData.celebrant_id) {
-            this.addError('celebrant_id', 'Celebrante é obrigatório');
+            this.addError('celebrant', 'Celebrante é obrigatório');
         }
-        
+
         return this.errors.size === 0;
     }
 
     validateLocationForm(formData) {
         this.errors.clear();
-        
         if (this.isEmpty(formData.name)) {
-            this.addError('name', 'Nome do local é obrigatório');
+            this.addError('new-location-name', 'Nome do local é obrigatório');
         }
-        
         return this.errors.size === 0;
     }
 
     validateCelebrantForm(formData) {
         this.errors.clear();
-        
         if (this.isEmpty(formData.name)) {
-            this.addError('name', 'Nome é obrigatório');
+            this.addError('new-celebrant-name', 'Nome é obrigatório');
         }
-        
         if (this.isEmpty(formData.title)) {
-            this.addError('title', 'Título é obrigatório');
+            this.addError('new-celebrant-title', 'Título é obrigatório');
         }
-        
         return this.errors.size === 0;
     }
 
     // ===== GERENCIAMENTO DE ERROS =====
-    addError(field, message) {
-        this.errors.set(field, message);
+    addError(fieldDomId, message) {
+        this.errors.set(fieldDomId, message);
     }
 
-    getError(field) {
-        return this.errors.get(field);
+    getError(fieldDomId) {
+        return this.errors.get(fieldDomId);
     }
 
     clearErrors() {
@@ -148,15 +144,15 @@ class ValidationManager {
     showFormErrors(formId) {
         const form = document.getElementById(formId);
         if (!form) return;
-        
+
         form.querySelectorAll('.error-message').forEach(el => el.remove());
         form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
-        
-        this.errors.forEach((message, field) => {
-            const input = form.querySelector(`#${field}`);
+
+        this.errors.forEach((message, fieldDomId) => {
+            const input = form.querySelector(`#${CSS.escape(fieldDomId)}`);
             if (input) {
                 input.classList.add('error');
-                
+
                 const errorEl = document.createElement('small');
                 errorEl.className = 'error-message text-danger';
                 errorEl.textContent = message;
@@ -164,14 +160,12 @@ class ValidationManager {
                 errorEl.style.fontSize = '0.875rem';
                 errorEl.style.marginTop = '0.25rem';
                 errorEl.style.display = 'block';
-                
+
                 const formGroup = input.closest('.form-group');
-                if (formGroup) {
-                    formGroup.appendChild(errorEl);
-                }
+                if (formGroup) formGroup.appendChild(errorEl);
             }
         });
-        
+
         const firstError = form.querySelector('.error');
         if (firstError) {
             firstError.focus();
@@ -182,13 +176,13 @@ class ValidationManager {
     setupRealtimeValidation(formId) {
         const form = document.getElementById(formId);
         if (!form) return;
-        
+
         form.querySelectorAll('input[type="tel"]').forEach(input => {
             input.addEventListener('input', (e) => {
                 e.target.value = this.formatPhone(e.target.value);
             });
         });
-        
+
         form.querySelectorAll('.uppercase-input').forEach(input => {
             input.addEventListener('input', (e) => {
                 const cursorPos = e.target.selectionStart;
@@ -198,19 +192,20 @@ class ValidationManager {
         });
     }
 
+    // ===== Conflitos de agenda (mapeia para IDs do DOM) =====
     async validateWeddingConflicts(formData) {
         try {
             const conflicts = await window.db.checkWeddingConflicts(formData);
-            
+
             if (conflicts.length > 0) {
                 conflicts.forEach(conflict => {
                     switch (conflict.conflict_type) {
                         case 'LIMITE_COMUNITARIO':
                         case 'LIMITE_TOTAL':
-                            this.addError('wedding_date', conflict.message);
+                            this.addError('wedding-date', conflict.message);
                             break;
                         case 'CONFLITO_LOCAL_HORARIO':
-                            this.addError('wedding_time', conflict.message);
+                            this.addError('wedding-time', conflict.message);
                             break;
                         case 'CONFLITO_CELEBRANTE':
                             this.addError('celebrant', conflict.message);
@@ -219,11 +214,11 @@ class ValidationManager {
                 });
                 return false;
             }
-            
+
             return true;
         } catch (error) {
             console.error('Erro ao validar conflitos:', error);
-            this.addError('general', 'Erro ao verificar disponibilidade');
+            this.addError('wedding-date', 'Erro ao verificar disponibilidade');
             return false;
         }
     }
