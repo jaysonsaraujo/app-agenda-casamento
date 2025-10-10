@@ -1,5 +1,6 @@
--- Atualiza/recria a função principal de conflitos.
--- Retorna 0 linhas = sem conflito. Caso contrário, 1+ linhas com {code, message}.
+-- Recria a função check_wedding_conflicts com a ASSINATURA observada no seu banco:
+-- (date, time, integer, integer, boolean, character varying)
+-- e com RETURNS TABLE(... varchar ...) para compatibilidade.
 
 create or replace function public.check_wedding_conflicts(
   p_wedding_date date,
@@ -7,9 +8,9 @@ create or replace function public.check_wedding_conflicts(
   p_location_id  integer,
   p_celebrant_id integer,
   p_is_community boolean,
-  p_wedding_id   integer default null
+  p_wedding_id   text default null
 )
-returns table(code text, message text)
+returns table(code varchar, message varchar)
 language plpgsql
 as $$
 declare
@@ -17,51 +18,42 @@ declare
   v_max_community_per_day    integer := 2;
   v_max_couples_per_slot     integer := 20;
 
-  -- flags/contadores auxiliares
   v_slot_exists              boolean;
   v_couples_in_slot          integer;
   v_community_slots_day      integer;
   v_unique_count_day         integer;
-  v_events_day               integer; -- unique + community_slots
+  v_events_day               integer;
   v_events_day_if_insert     integer;
   v_community_slots_if_ins   integer;
-
 begin
-  -- 1) Lê limites da system_config (se existirem)
-  select coalesce( (select config_value::int from public.system_config where config_key='max_weddings_per_day'), v_max_per_day )
+  -- 1) Ler limites da system_config
+  select coalesce((select config_value::int from public.system_config where config_key='max_weddings_per_day'), v_max_per_day)
     into v_max_per_day;
-  select coalesce( (select config_value::int from public.system_config where config_key='max_community_weddings'), v_max_community_per_day )
+  select coalesce((select config_value::int from public.system_config where config_key='max_community_weddings'), v_max_community_per_day)
     into v_max_community_per_day;
-  select coalesce( (select config_value::int from public.system_config where config_key='max_couples_per_community'), v_max_couples_per_slot )
+  select coalesce((select config_value::int from public.system_config where config_key='max_couples_per_community'), v_max_couples_per_slot)
     into v_max_couples_per_slot;
 
-  -- 2) Valida disponibilidade do CELEBRANTE no MESMO DIA/HORA em OUTRO LOCAL.
-  --    Só é permitido múltiplos no mesmo slot se for comunitário no MESMO local
-  --    (ou seja, repetir casal dentro do mesmo evento comunitário).
+  -- 2) Conflito de celebrante no MESMO dia/hora em OUTRO local ou quando um dos lados não é comunitário
   if exists (
-      select 1
+    select 1
       from public.weddings w
-      where w.wedding_date = p_wedding_date
-        and w.wedding_time = p_wedding_time
-        and w.celebrant_id = p_celebrant_id
-        and (p_wedding_id is null or w.wedding_id <> p_wedding_id)
-        and (
-          -- CONFLITO se:
-          --  (a) local diferente
-          w.location_id <> p_location_id
-          or
-          --  (b) mesmo local porém pelo menos um dos lados NÃO é comunitário
-          not (w.is_community = true and p_is_community = true)
-        )
-    )
-  then
-    code := 'CELEBRANT_CONFLICT';
-    message := 'O celebrante já está reservado neste dia e horário (em outro atendimento).';
-    return next;
+     where w.wedding_date = p_wedding_date
+       and w.wedding_time = p_wedding_time
+       and w.celebrant_id = p_celebrant_id
+       and (p_wedding_id is null or w.wedding_id::text <> p_wedding_id)
+       and (
+         w.location_id <> p_location_id
+         or not (w.is_community = true and p_is_community = true)
+       )
+  ) then
+    return query
+      select 'CELEBRANT_CONFLICT'::varchar,
+             'O celebrante já está reservado neste dia e horário (em outro atendimento).'::varchar;
     return;
   end if;
 
-  -- 3) Cálculo do "slot comunitário" (data+hora+local+celebrante)
+  -- 3) Slot comunitário (data+hora+local+celebrante) já existente?
   select exists (
            select 1 from public.weddings w
             where w.wedding_date = p_wedding_date
@@ -69,11 +61,11 @@ begin
               and w.location_id  = p_location_id
               and w.celebrant_id = p_celebrant_id
               and w.is_community = true
-              and (p_wedding_id is null or w.wedding_id <> p_wedding_id)
+              and (p_wedding_id is null or w.wedding_id::text <> p_wedding_id)
          )
     into v_slot_exists;
 
-  -- Casais já cadastrados nesse slot (somente comunitários)
+  -- Casais já cadastrados nesse slot (apenas comunitários)
   select count(*)
     from public.weddings w
    where w.wedding_date = p_wedding_date
@@ -81,26 +73,25 @@ begin
      and w.location_id  = p_location_id
      and w.celebrant_id = p_celebrant_id
      and w.is_community = true
-     and (p_wedding_id is null or w.wedding_id <> p_wedding_id)
+     and (p_wedding_id is null or w.wedding_id::text <> p_wedding_id)
     into v_couples_in_slot;
 
-  -- 4) Limite de CASAIS por evento comunitário
+  -- 4) Limite de casais por evento comunitário
   if p_is_community then
     if v_couples_in_slot >= v_max_couples_per_slot then
-      code := 'LIMITE_CASAIS_COMUNITARIO';
-      message := format('Limite de %s casais por casamento comunitário já atingido para este slot.', v_max_couples_per_slot);
-      return next;
+      return query
+        select 'LIMITE_CASAIS_COMUNITARIO'::varchar,
+               format('Limite de %s casais por casamento comunitário já atingido para este slot.', v_max_couples_per_slot)::varchar;
       return;
     end if;
   end if;
 
   -- 5) Contagem de EVENTOS por dia (únicos + slots comunitários distintos)
-  --    Ignora o próprio registro (em edição).
   with weds as (
     select *
       from public.weddings w
      where w.wedding_date = p_wedding_date
-       and (p_wedding_id is null or w.wedding_id <> p_wedding_id)
+       and (p_wedding_id is null or w.wedding_id::text <> p_wedding_id)
   ),
   community_slots as (
     select wedding_date, wedding_time, location_id, celebrant_id
@@ -115,45 +106,41 @@ begin
 
   v_events_day := v_unique_count_day + v_community_slots_day;
 
-  -- Se vamos inserir um comunitário:
   if p_is_community then
-    -- Só soma novo "slot" se ele ainda não existir
     v_community_slots_if_ins := v_community_slots_day + (case when v_slot_exists then 0 else 1 end);
     v_events_day_if_insert   := v_unique_count_day + v_community_slots_if_ins;
 
     if v_community_slots_if_ins > v_max_community_per_day then
-      code := 'LIMITE_COMUNITARIO';
-      message := format('Limite de %s casamentos comunitários por dia já atingido.', v_max_community_per_day);
-      return next;
+      return query
+        select 'LIMITE_COMUNITARIO'::varchar,
+               format('Limite de %s casamentos comunitários por dia já atingido.', v_max_community_per_day)::varchar;
       return;
     end if;
 
     if v_events_day_if_insert > v_max_per_day then
-      code := 'LIMITE_EVENTOS_DIA';
-      message := format('Limite de %s eventos por dia já atingido.', v_max_per_day);
-      return next;
+      return query
+        select 'LIMITE_EVENTOS_DIA'::varchar,
+               format('Limite de %s eventos por dia já atingido.', v_max_per_day)::varchar;
       return;
     end if;
 
   else
-    -- Inserção de ÚNICO: sempre acrescenta 1 evento no dia
     if (v_events_day + 1) > v_max_per_day then
-      code := 'LIMITE_EVENTOS_DIA';
-      message := format('Limite de %s eventos por dia já atingido.', v_max_per_day);
-      return next;
+      return query
+        select 'LIMITE_EVENTOS_DIA'::varchar,
+               format('Limite de %s eventos por dia já atingido.', v_max_per_day)::varchar;
       return;
     end if;
 
-    -- Também proíbe único no mesmo slot de um comunitário existente (mesma data/hora/local/celebrante)
     if v_slot_exists then
-      code := 'CONFLITO_COMUNITARIO_NO_SLOT';
-      message := 'Já existe casamento comunitário neste mesmo horário/local/celebrante.';
-      return next;
+      return query
+        select 'CONFLITO_COMUNITARIO_NO_SLOT'::varchar,
+               'Já existe casamento comunitário neste mesmo horário/local/celebrante.'::varchar;
       return;
     end if;
   end if;
 
-  -- 6) Sem conflitos
+  -- 6) Sem conflitos => retorna 0 linhas
   return;
 end;
 $$;
