@@ -1,99 +1,30 @@
-/**
- * Inicialização do Supabase no navegador com URL/ANON fixos.
- * - Carrega a lib UMD do @supabase/supabase-js@2 se necessário
- * - Cria window.supabaseClient usando as constantes abaixo
- * - Expõe window.initSupabase() e window.checkSupabaseConnection()
- *
- * IMPORTANTE: Este arquivo é JavaScript puro (NÃO coloque <script> aqui).
- * Na página, inclua na ordem: UMD do Supabase -> ESTE arquivo -> seus src/*.js
- */
+<!-- ESTE ARQUIVO É CARREGADO NO NAVEGADOR (sem exports) -->
+<script>
+  (function () {
+    'use strict';
 
-/** ====== SUAS CREDENCIAIS PÚBLICAS (ANON) ====== */
-const SUPABASE_URL = "https://aplicativos-db-phm2-supabase.xqzrhl.easypanel.host";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE";
-/** ============================================== */
+    // === CONFIGURAÇÃO DO SUPABASE ===
+    const SUPABASE_URL = 'https://aplicativos-db-phm2-supabase.xqzrhl.easypanel.host';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE';
 
-(function () {
-  function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      try {
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-          if (existing.dataset.loaded === "1") return resolve();
-          existing.addEventListener("load", () => resolve());
-          existing.addEventListener("error", () => reject(new Error("Falha ao carregar: " + src)));
-          return;
-        }
-        const s = document.createElement("script");
-        s.async = true;
-        s.src = src;
-        s.onload = () => { s.dataset.loaded = "1"; resolve(); };
-        s.onerror = () => reject(new Error("Falha ao carregar: " + src));
-        document.head.appendChild(s);
-      } catch (e) { reject(e); }
-    });
-  }
-
-  async function ensureSupabaseUMD() {
-    if ((window.supabase && typeof window.supabase.createClient === "function") ||
-        (window.Supabase && typeof window.Supabase.createClient === "function")) {
+    // Valida presença do SDK (cdn.jsdelivr ou unpkg)
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      console.error('[supabase.js] SDK do Supabase não carregou. Inclua o script do CDN ANTES deste arquivo:');
+      console.error('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>');
       return;
     }
-    const cdnCandidates = [
-      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js",
-      "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"
-    ];
-    let lastErr = null;
-    for (const url of cdnCandidates) {
-      try {
-        await loadScript(url);
-        if ((window.supabase && typeof window.supabase.createClient === "function") ||
-            (window.Supabase && typeof window.Supabase.createClient === "function")) {
-          return;
-        }
-      } catch (e) { lastErr = e; }
-    }
-    throw (lastErr || new Error("Não foi possível carregar a lib UMD do Supabase."));
-  }
 
-  async function initSupabase() {
+    // Cria o cliente e expõe globalmente
     try {
-      await ensureSupabaseUMD();
-      if (window.supabaseClient) return true;
-
-      const createClient =
-        (window.supabase && window.supabase.createClient) ||
-        (window.Supabase && window.Supabase.createClient);
-
-      if (typeof createClient !== "function") {
-        throw new Error("createClient não encontrado no UMD do Supabase.");
-      }
-      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-        throw new Error("SUPABASE_URL/SUPABASE_ANON_KEY não definidos.");
-      }
-      window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      return true;
-    } catch (err) {
-      console.error("initSupabase() falhou:", err);
-      return false;
+      const { createClient } = window.supabase;
+      const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: false },
+        global: { headers: { 'x-client-info': 'casamentos-app/1.0' } }
+      });
+      window.supabaseClient = client;
+      console.info('[supabase.js] Supabase client inicializado.');
+    } catch (e) {
+      console.error('[supabase.js] Falha ao criar o cliente Supabase:', e);
     }
-  }
-
-  async function checkSupabaseConnection() {
-    try {
-      if (!window.supabaseClient) {
-        const ok = await initSupabase();
-        if (!ok) return false;
-      }
-      const { error } = await window.supabaseClient
-        .from("system_config")
-        .select("config_key")
-        .limit(1);
-      if (error) { console.error("Ping Supabase falhou:", error); return false; }
-      return true;
-    } catch (e) { console.error("checkSupabaseConnection() erro:", e); return false; }
-  }
-
-  window.initSupabase = initSupabase;
-  window.checkSupabaseConnection = checkSupabaseConnection;
-})();
+  })();
+</script>
